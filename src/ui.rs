@@ -3,73 +3,74 @@ use tui::{
     layout::{Alignment, Constraint, Direction, Layout},
     style::{Color, Modifier, Style},
     text::Span,
-    widgets::{Block, BorderType, Borders},
-    Frame, Terminal,
+    widgets::{Block, Borders},
+    Frame,
 };
 
 pub fn draw_interface<B: Backend>(f: &mut Frame<B>) {
-    // Wrapping block for a group
-    // Just draw the block and the group on the same area and build the group
-    // with at least a margin of 1
     let size = f.size();
 
     // Surrounding block
-    let block = Block::default()
+    let main_window = Block::default()
         .borders(Borders::ALL)
-        .title("Main block with round corners")
-        .title_alignment(Alignment::Center)
-        .border_type(BorderType::Rounded);
+        .title(Span::styled(" TRusTLLo ", Style::default().fg(Color::Red)))
+        .title_alignment(Alignment::Center);
 
-    f.render_widget(block, size);
+    f.render_widget(main_window, size);
 
-    let chunks = Layout::default()
-        .direction(Direction::Vertical)
-        .margin(4)
-        .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
+    let column_layout = Layout::default()
+        .direction(Direction::Horizontal)
+        .margin(1)
+        .constraints([Constraint::Percentage(35), Constraint::Percentage(65)].as_ref())
         .split(f.size());
 
-    // Top two inner blocks
-    let top_chunks = Layout::default()
-        .direction(Direction::Horizontal)
+    // left pane
+    let left_layout = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([Constraint::Length(3), Constraint::Percentage(100)].as_ref())
+        .split(column_layout[0]);
+
+    let board_block = Block::default().title("Board").borders(Borders::ALL);
+    f.render_widget(board_block, left_layout[0]);
+
+    let card_block = Block::default().title("Card").borders(Borders::ALL);
+    f.render_widget(card_block, left_layout[1]);
+
+    let card_detail_layout = Layout::default()
+        .direction(Direction::Vertical)
+        .margin(1)
         .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
-        .split(chunks[0]);
+        .split(left_layout[1]);
 
-    // Top left inner block with green background
-    let block = Block::default()
-        .title(vec![
-            Span::styled("With", Style::default().fg(Color::Yellow)),
-            Span::from(" background"),
-        ])
-        .style(Style::default().bg(Color::Green));
-    f.render_widget(block, top_chunks[0]);
+    let card_description = Block::default().title("Description").borders(Borders::ALL);
+    f.render_widget(card_description, card_detail_layout[0]);
+    let card_checklist = Block::default().title("Checklist").borders(Borders::ALL);
+    f.render_widget(card_checklist, card_detail_layout[1]);
 
-    // Top right inner block with styled title aligned to the right
-    let block = Block::default()
-        .title(Span::styled(
-            "Styled title",
-            Style::default()
-                .fg(Color::White)
-                .bg(Color::Red)
-                .add_modifier(Modifier::BOLD),
-        ))
-        .title_alignment(Alignment::Right);
-    f.render_widget(block, top_chunks[1]);
+    // right pane
+    let lists_block = Block::default().title("Lists").borders(Borders::ALL);
+    f.render_widget(lists_block, column_layout[1]);
 
-    // Bottom two inner blocks
-    let bottom_chunks = Layout::default()
+    let list_layout = Layout::default()
         .direction(Direction::Horizontal)
-        .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
-        .split(chunks[1]);
+        .margin(1)
+        .constraints(
+            [
+                Constraint::Percentage(25),
+                Constraint::Percentage(25),
+                Constraint::Percentage(25),
+                Constraint::Percentage(25),
+            ]
+            .as_ref(),
+        )
+        .split(column_layout[1]);
 
-    // Bottom left block with all default borders
-    let block = Block::default().title("With borders").borders(Borders::ALL);
-    f.render_widget(block, bottom_chunks[0]);
-
-    // Bottom right block with styled left and right border
-    let block = Block::default()
-        .title("With styled borders and doubled borders")
-        .border_style(Style::default().fg(Color::Cyan))
-        .borders(Borders::LEFT | Borders::RIGHT)
-        .border_type(BorderType::Double);
-    f.render_widget(block, bottom_chunks[1]);
+    let list_1 = Block::default().title("List 1").borders(Borders::ALL);
+    f.render_widget(list_1, list_layout[0]);
+    let list_2 = Block::default().title("List 2").borders(Borders::ALL);
+    f.render_widget(list_2, list_layout[1]);
+    let list_3 = Block::default().title("List 3").borders(Borders::ALL);
+    f.render_widget(list_3, list_layout[2]);
+    let list_4 = Block::default().title("List 4").borders(Borders::ALL);
+    f.render_widget(list_4, list_layout[3]);
 }
