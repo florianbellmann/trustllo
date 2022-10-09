@@ -18,3 +18,5 @@ pub fn run_app<B: Backend>(terminal: &mut Terminal<B>) -> io::Result<()> {
         }
     }
 }
+
+// TODO: Test if q exits the app

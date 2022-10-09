@@ -6,8 +6,8 @@ use crossterm::{
 use std::{error::Error, io};
 use tui::{backend::CrosstermBackend, Terminal};
 
-mod ui;
 mod app;
+mod ui;
 
 fn main() -> Result<(), Box<dyn Error>> {
     // setup terminal
