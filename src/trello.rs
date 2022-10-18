@@ -1,1 +1,81 @@
-pub mod api;
+pub mod api_connector;
+
+pub struct Board {
+    name: String,
+    desc: String,
+    // descData: null,
+    closed: bool,
+    // dateClosed: null,
+    // idOrganization: String,
+    // idEnterprise: null,
+    // limits: null,
+    // pinned: null,
+    // shortLink: String,
+    // powerUps: any[],
+    // dateLastActivity: String,
+    // // idTags: any[],
+    // datePluginDisable: null,
+    // creationMethod: null,
+    // ixUpdate: null,
+    // enterpriseOwned: bool,
+    // idBoardSource: null,
+    // idMemberCreator: String,
+    id: String,
+    // starred: bool,
+    url: String,
+    // prefs: Prefs,
+    subscribed: bool,
+    // labelNames: LabelNames,
+    // dateLastView: String,
+    // shortUrl: String,
+    // templateGallery: null,
+    // premiumFeatures: String[],
+    // memberships: Membership[],
+}
+
+pub struct List {
+    id: String,
+    name: String,
+    closed: bool,
+    // pos: uint,
+    // softLimit: null,
+    idBoard: String,
+    subscribed: bool,
+}
+
+pub struct Card {
+    id: String,
+    // checkItemStates: null,
+    closed: bool,
+    // dateLastActivity: String,
+    desc: String,
+    // descData: null,
+    // dueReminder: null,
+    idBoard: String,
+    idList: String,
+    // idMembersVoted: any[],
+    // idShort: number,
+    // idAttachmentCover: null,
+    // idLabels: any[],
+    manualCoverAttachment: bool,
+    name: String,
+    // pos: number,
+    shortLink: String,
+    // isTemplate: bool,
+    // cardRole: null,
+    // badges: Badges,
+    dueComplete: bool,
+    // due?: any,
+    // idChecklists: any[],
+    // idMembers: any[],
+    // labels: any[],
+    shortUrl: String,
+    // start: null,
+    subscribed: bool,
+    url: String,
+    // cover: Cover,
+}
+
+pub struct Label {}
+pub struct Checklist {}
+

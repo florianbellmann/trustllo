@@ -1,6 +1,4 @@
-
 mod app;
-
 mod trello;
 
 use app::ApplicationService;
@@ -11,6 +9,4 @@ fn main() {
     ApplicationService::run_app_loop();
 
     ApplicationService::teardown();
-
 }
-

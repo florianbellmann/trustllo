@@ -41,7 +41,7 @@
 //
 //
 
-use crate::trello::api::ApiConnector;
+use crate::trello::api_connector::ApiConnector;
 
 pub struct ApplicationService {
     prop1: bool,
@@ -59,35 +59,35 @@ impl ApplicationService {
         // optional: store/cache
 
         // init terminal
-    // fn main() -> Result<(), Box<dyn Error>> {
-    // // Check if the current environment is in a terminal.
-    // check_if_terminal();
+        // fn main() -> Result<(), Box<dyn Error>> {
+        // // Check if the current environment is in a terminal.
+        // check_if_terminal();
 
-    // // setup terminal
-    // enable_raw_mode()?; // send data byte by byte to terminal
-    // let mut stdout = io::stdout();
-    // execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
-    // let backend = CrosstermBackend::new(stdout);
-    // let mut terminal = Terminal::new(backend)?;
+        // // setup terminal
+        // enable_raw_mode()?; // send data byte by byte to terminal
+        // let mut stdout = io::stdout();
+        // execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
+        // let backend = CrosstermBackend::new(stdout);
+        // let mut terminal = Terminal::new(backend)?;
 
-    // // create app and run it
-    // let res = app::run_app(&mut terminal);
+        // // create app and run it
+        // let res = app::run_app(&mut terminal);
 
-    // // restore terminal
-    // disable_raw_mode()?;
-    // execute!(
-    //     terminal.backend_mut(),
-    //     LeaveAlternateScreen,
-    //     DisableMouseCapture
-    // )?;
-    // terminal.show_cursor()?;
+        // // restore terminal
+        // disable_raw_mode()?;
+        // execute!(
+        //     terminal.backend_mut(),
+        //     LeaveAlternateScreen,
+        //     DisableMouseCapture
+        // )?;
+        // terminal.show_cursor()?;
 
-    // // Error handling
-    // if let Err(err) = res {
-    //     println!("{:?}", err);
-    // }
+        // // Error handling
+        // if let Err(err) = res {
+        //     println!("{:?}", err);
+        // }
 
-    // Ok(())
+        // Ok(())
 
         // display data
 
