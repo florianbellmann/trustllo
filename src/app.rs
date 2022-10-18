@@ -1,22 +1,63 @@
-use std::io;
+// use std::io;
 
-use crossterm::event::Event;
-use crossterm::event::{ self, KeyCode };
-use tui::backend::Backend;
-use tui::Terminal;
+// use crossterm::event::Event;
+// use crossterm::event::{ self, KeyCode };
+// use tui::backend::Backend;
+// use tui::Terminal;
 
-use crate::ui;
+// // use crate::ui;
 
-pub fn run_app<B: Backend>(terminal: &mut Terminal<B>) -> io::Result<()> {
-    loop {
-        terminal.draw(ui::draw_interface)?;
+// pub fn run_app<B: Backend>(terminal: &mut Terminal<B>) -> io::Result<()> {
+//     loop {
+//         terminal.draw(ui::draw_interface)?;
 
-        if let Event::Key(key) = event::read()? {
-            if let KeyCode::Char('q') = key.code {
-                return Ok(());
-            }
-        }
+//         if let Event::Key(key) = event::read()? {
+//             if let KeyCode::Char('q') = key.code {
+//                 return Ok(());
+//             }
+//         }
+//     }
+// }
+
+// // TODO: Test if q exits the app
+//
+//
+
+use crate::trello::api::ApiConnector;
+
+pub struct ApplicationService {
+    prop1: bool,
+}
+
+impl ApplicationService {
+    pub fn init() {
+        println!("Initializing the app...");
+
+        //TODO: load data async to get better startup
+        //
+        // Load data from trello
+        ApiConnector::loadall();
+
+        // optional: store/cache
+
+        // init terminal
+
+        // display data
+
+        // init keyboard listener
+    }
+
+    pub fn teardown() -> () {
+        println!("Tearing down the app...");
+    }
+
+    pub fn run_app_loop() -> () {
+        // TODO: actually build the app loop
+
+        todo!()
     }
 }
 
-// TODO: Test if q exits the app
+// TODO:
+// think about if you can actually test stuff here. It's the
+// app loop after all. Is there something to test?
