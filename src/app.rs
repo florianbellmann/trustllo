@@ -47,11 +47,11 @@ impl ApplicationService {
         // init keyboard listener
     }
 
-    pub fn teardown() -> () {
+    pub fn teardown() {
         println!("Tearing down the app...");
     }
 
-    pub fn run_app_loop() -> () {
+    pub fn run_app_loop() {
         // TODO: actually build the app loop
 
         todo!()
