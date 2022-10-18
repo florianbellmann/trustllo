@@ -8,15 +8,9 @@ use tui::{backend::CrosstermBackend, Terminal};
 
 use std::{
     boxed::Box,
-    fs,
     io::{stderr, stdout, Write},
-    panic::PanicInfo,
-    path::PathBuf,
-    sync::Arc,
-    sync::Condvar,
-    sync::Mutex,
     thread,
-    time::{Duration, Instant},
+    time::Duration,
 };
 
 mod app;
