@@ -82,6 +82,9 @@ pub struct Card {
     // cover: Cover,
 }
 
+pub struct Label {}
+pub struct Checklist {}
+
 impl ApiConnector {
     pub fn loadall() {
         println!("test");
