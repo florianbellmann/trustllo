@@ -6,6 +6,19 @@ use crossterm::{
 use std::{error::Error, io};
 use tui::{backend::CrosstermBackend, Terminal};
 
+use std::{
+    boxed::Box,
+    fs,
+    io::{stderr, stdout, Write},
+    panic::PanicInfo,
+    path::PathBuf,
+    sync::Arc,
+    sync::Condvar,
+    sync::Mutex,
+    thread,
+    time::{Duration, Instant},
+};
+
 mod app;
 mod ui;
 
@@ -43,7 +56,6 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     Ok(())
 }
-
 
 /// Check and report to the user if the current environment is not a terminal.
 pub fn check_if_terminal() {
