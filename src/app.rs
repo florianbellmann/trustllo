@@ -1,7 +1,7 @@
 use std::io;
 
 use crossterm::event::Event;
-use crossterm::event::{self, KeyCode};
+use crossterm::event::{ self, KeyCode };
 use tui::backend::Backend;
 use tui::Terminal;
 

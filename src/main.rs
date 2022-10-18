@@ -11,14 +11,8 @@ mod ui;
 
 mod trello;
 
-
-
 fn main() -> Result<(), Box<dyn Error>> {
-
-    
     trello::ApiConnector();
-
-
 
     // setup terminal
     enable_raw_mode()?; // send data byte by byte to terminal
@@ -41,7 +35,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // Error handling
     if let Err(err) = res {
-        println!("{:?}", err)
+        println!("{:?}", err);
     }
 
     Ok(())
