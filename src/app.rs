@@ -54,7 +54,7 @@ impl ApplicationService {
         }
     }
 
-    pub async fn init(&mut self) {
+    pub async fn init(&self) {
         println!("Initializing the app...");
 
         //TODO: load data async to get better startup
@@ -63,10 +63,8 @@ impl ApplicationService {
         //
         //
         //
-        let a = ApiConnector::new();
-
         
-        self.api_connector.loadall();
+        self.api_connector.loadall().await;
 
         // optional: store/cache
 
@@ -106,11 +104,11 @@ impl ApplicationService {
         // init keyboard listener
     }
 
-    pub fn teardown() {
+    pub fn teardown(&self) {
         println!("Tearing down the app...");
     }
 
-    pub fn run_app_loop() {
+    pub fn run_app_loop(&self) {
         // TODO: actually build the app loop
 
         // todo!()

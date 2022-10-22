@@ -20,7 +20,7 @@ impl ApiConnector {
     }
 
     // TODO: refatr to the real error type
-    pub async fn loadall() -> Result<(), Box<dyn std::error::Error>> {
+    pub async fn loadall(&self) -> Result<(), Box<dyn std::error::Error>> {
         // TODO: break and display message if env not present. do I need a test here?
         // the test is rather necessary for "load data initially", this implies reading the envs.
         // Then I need to add test envs for the tests to pass, right?
@@ -30,7 +30,7 @@ impl ApiConnector {
 
         // println!("{:#?}", resp);
 
-        // self.make_request();
+        self.make_request("/cards", Method::GET, "").await;
         Ok(())
     }
 
@@ -40,10 +40,10 @@ impl ApiConnector {
 
     // TODO: pass also params
     async fn make_request(
-        &mut self,
-        endpoint: String,
+        &self,
+        endpoint: &str,
         request_method: Method,
-        path: String,
+        path: &str,
     ) -> Result<(), Box<dyn std::error::Error>> {
         let client = reqwest::Client::new();
 
@@ -63,11 +63,12 @@ impl ApiConnector {
             auth_params,
             url_params
         );
+        println!("{:#?}", request_url);
 
         let resp = reqwest::get(request_url)
-            .await?
-            .json::<HashMap<String, String>>()
             .await?;
+            // .json::<HashMap<String, String>>()
+            // .await;
         println!("{:#?}", resp);
 
         Ok(())
