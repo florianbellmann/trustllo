@@ -1,4 +1,4 @@
-use std::{collections::HashMap, env};
+use std::{env};
 
 use reqwest::Method;
 
@@ -43,7 +43,7 @@ impl ApiConnector {
         &self,
         endpoint: &str,
         request_method: Method,
-        path: &str,
+        _path: &str,
     ) -> Result<(), Box<dyn std::error::Error>> {
         let client = reqwest::Client::new();
 
