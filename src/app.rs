@@ -44,17 +44,29 @@
 use crate::trello::api_connector::ApiConnector;
 
 pub struct ApplicationService {
-    prop1: bool,
+    api_connector: ApiConnector,
 }
 
 impl ApplicationService {
-    pub fn init() {
+    pub fn new() -> ApplicationService {
+        ApplicationService {
+            api_connector: ApiConnector::new(),
+        }
+    }
+
+    pub async fn init(&mut self) {
         println!("Initializing the app...");
 
         //TODO: load data async to get better startup
         //
         // Load data from trello
-        ApiConnector::loadall();
+        //
+        //
+        //
+        let a = ApiConnector::new();
+
+        
+        self.api_connector.loadall();
 
         // optional: store/cache
 
@@ -101,7 +113,7 @@ impl ApplicationService {
     pub fn run_app_loop() {
         // TODO: actually build the app loop
 
-        todo!()
+        // todo!()
     }
 }
 

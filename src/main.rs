@@ -1,12 +1,17 @@
+use app::ApplicationService;
+
 mod app;
 mod trello;
 
-use app::ApplicationService;
 
-fn main() {
-    ApplicationService::init();
+#[tokio::main]
+async fn main() {
 
-    ApplicationService::run_app_loop();
+    let application_service = ApplicationService::new();
 
-    ApplicationService::teardown();
+    // application_service::init
+
+    application_service::run_app_loop();
+
+    application_service::teardown();
 }

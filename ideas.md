@@ -1,5 +1,10 @@
 
 
+check all implementations for 
+allocations 
+and
+call by reference / borrowing
+
 > bacon + clippy
 
 learn rust
@@ -51,4 +56,9 @@ use tokio for async loading of data?
 # Questions
 
 What is the builder pattern that bottom uses for app.rs?
+
+## read up on
+
+Some()
+derives
 
