@@ -1,4 +1,7 @@
 
+config manager
+
+
 
 check all implementations for 
 allocations 
@@ -53,6 +56,11 @@ build proper project setup with roadmap etc
 use tokio for async loading of data?
 
 
+# readme:
+
+i know I could ve used some more libraries, but I wanted to learn rust!
+
+
 # Questions
 
 What is the builder pattern that bottom uses for app.rs?
@@ -61,4 +69,6 @@ What is the builder pattern that bottom uses for app.rs?
 
 Some()
 derives
+
+
 
