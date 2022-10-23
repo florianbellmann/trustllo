@@ -74,6 +74,8 @@ mod tests {
 
     use super::ConfigManager;
 
+    USE DIFFERENT NAME PER TEST BECAUSE OTHERWISE WE CANT TO PARRALLEL!VG
+
     const TEST_CONFIG_NAME: &str = "/tmp/trustllo_custom_config";
 
     #[test]
@@ -105,7 +107,11 @@ mod tests {
     #[test]
     fn create_new_config_spec() {
         ConfigManager::create_config(Some(TEST_CONFIG_NAME));
-        assert_eq!(true, Path::new(TEST_CONFIG_NAME).is_file())
+        assert_eq!(true, Path::new(TEST_CONFIG_NAME).is_file());
+
+        // remove the file
+        fs::remove_file(TEST_CONFIG_NAME);
+        assert_eq!(false, Path::new(TEST_CONFIG_NAME).is_file())
     }
 
     #[test]
