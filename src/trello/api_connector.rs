@@ -1,6 +1,8 @@
-use std::{env};
+use std::env;
 
 use reqwest::Method;
+
+use crate::config::config_manager::ConfigManager;
 
 pub struct ApiConnector {
     api_key: String,
@@ -30,6 +32,7 @@ impl ApiConnector {
 
         // println!("{:#?}", resp);
 
+        ConfigManager::config_exists(None);
         self.make_request("/cards", Method::GET, "").await;
         Ok(())
     }
@@ -65,10 +68,9 @@ impl ApiConnector {
         );
         println!("{:#?}", request_url);
 
-        let resp = reqwest::get(request_url)
-            .await?;
-            // .json::<HashMap<String, String>>()
-            // .await;
+        let resp = reqwest::get(request_url).await?;
+        // .json::<HashMap<String, String>>()
+        // .await;
         println!("{:#?}", resp);
 
         Ok(())

@@ -2,6 +2,8 @@ use app::ApplicationService;
 
 mod app;
 mod trello;
+mod config;
+mod utils;
 
 #[tokio::main]
 async fn main() {
