@@ -1,5 +1,17 @@
 pub mod api_connector;
 
+pub struct Endpoint {}
+impl Endpoint {
+    const DEFAULT_CONFIG_LOCATION: &str = "/Users/florian.juesten/.config/trustllo/config.json";
+    pub const CARDS: &str = "/cards";
+    pub const BOARDS: &str = "/boards";
+    pub const LISTS: &str = "/lists";
+    pub const MEMBERS: &str = "/members";
+    pub const ACTIONS: &str = "/actions";
+    pub const SEARCH: &str = "/search";
+    pub const CHECKLISTS: &str = "/checklists";
+}
+
 pub struct Board {
     name: String,
     desc: String,
@@ -78,4 +90,3 @@ pub struct Card {
 
 pub struct Label {}
 pub struct Checklist {}
-
