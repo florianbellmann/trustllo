@@ -40,6 +40,9 @@ display it statically in the ui
 
 ## mvp
 
+could use https://github.com/dragonflydb/dragonfly for storage
+
+
 structure app
   DDD
 switch to TDD
