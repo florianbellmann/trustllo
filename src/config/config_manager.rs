@@ -55,8 +55,8 @@ impl ConfigManager {
             };
             let config_string = serde_json::to_string(&config).unwrap();
 
+            println!("Config with contents {} created.", &config_string);
             fs::write(config_path, config_string);
-            println!("Config with contents {} created", config_string)
         }
     }
 
@@ -138,7 +138,7 @@ mod tests {
 
         assert_eq!(config.api_key, "teSt_key");
         assert_eq!(config.api_token, "teSt_token");
-        assert_eq!(config.api_key, "teSt_member_id");
+        assert_eq!(config.member_id, "teSt_member_id");
 
         // remove the file
         fs::remove_file(new_config_name);

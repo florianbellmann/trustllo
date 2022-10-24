@@ -4,6 +4,8 @@ use reqwest::Method;
 
 use crate::config::config_manager::ConfigManager;
 
+use super::Endpoint;
+
 pub struct ApiConnector {}
 
 //TODO: maybe move this struct
@@ -27,7 +29,7 @@ impl ApiConnector {
 
         // println!("{:#?}", resp);
 
-        self.make_request("/cards", Method::GET, "").await;
+        self.make_request(Endpoint::CARDS, Method::GET, "").await;
         Ok(())
     }
 
@@ -44,6 +46,8 @@ impl ApiConnector {
     ) -> Result<(), Box<dyn std::error::Error>> {
         let client = reqwest::Client::new();
 
+        let config = ConfigManager::read_config(None).unwrap(); //TODO: this is also still hardcoded
+
         let request_builder = client.request(request_method, "https://httpbin.org/ip");
         request_builder.header("Accept", "application/json");
 
@@ -51,7 +55,7 @@ impl ApiConnector {
 
         // TODO: add url_params
         let url_params = "".to_owned();
-        let auth_params = format!("&key={}&token={}", self.api_key, self.api_token);
+        let auth_params = format!("&key={}&token={}", config.api_key, config.api_token);
 
         let request_url = format!(
             "{}{}?{}{}",

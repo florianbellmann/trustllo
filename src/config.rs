@@ -4,7 +4,7 @@ pub mod config_manager;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Config {
-    api_key: String,
-    api_token: String,
-    member_id:String,
+    pub api_key: String,
+    pub api_token: String,
+    pub member_id:String,
 }
