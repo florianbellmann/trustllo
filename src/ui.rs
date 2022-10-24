@@ -1,3 +1,7 @@
+
+pub mod cli;
+
+
 use tui::{
     backend::Backend,
     layout::{ Alignment, Constraint, Direction, Layout },

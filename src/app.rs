@@ -1,3 +1,4 @@
+use std::io::{stdin, stdout, Write};
 // use crossterm::{
 //     event::{DisableMouseCapture, EnableMouseCapture},
 //     execute,
@@ -41,7 +42,11 @@
 //
 //
 
-use crate::trello::api_connector::ApiConnector;
+use crate::{
+    config::config_manager::ConfigManager,
+    trello::api_connector::ApiConnector,
+    ui::cli::{self, Cli},
+};
 
 pub struct ApplicationService {
     api_connector: ApiConnector,
@@ -57,13 +62,20 @@ impl ApplicationService {
     pub async fn init(&self) {
         println!("Initializing the app...");
 
+        // TODO add functionality for custom config
+        if !ConfigManager::config_exists(None) {
+            let (key, token) = Cli::read_config();
+
+            ConfigManager::create_config(key, token, None);
+        }
+
         //TODO: load data async to get better startup
         //
         // Load data from trello
         //
         //
         //
-        
+
         self.api_connector.loadall().await;
 
         // optional: store/cache

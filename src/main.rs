@@ -4,6 +4,7 @@ mod app;
 mod trello;
 mod config;
 mod utils;
+mod ui;
 
 #[tokio::main]
 async fn main() {

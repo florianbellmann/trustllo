@@ -34,7 +34,7 @@ impl ConfigManager {
         !config.api_key.is_empty() && !config.api_token.is_empty()
     }
 
-    pub fn create_config(custom_path: Option<&str>) {
+    pub fn create_config(api_key: String, api_token: String, custom_path: Option<&str>) {
         let config_path = custom_path.unwrap_or(ConfigManager::DEFAULT_CONFIG_LOCATION);
 
         let file_exists = Path::new(config_path).is_file();
@@ -42,7 +42,10 @@ impl ConfigManager {
         if file_exists {
             println!("Config file already exists");
         } else {
-            fs::write(config_path, b"{}");
+            let config: Config = Config { api_key, api_token };
+            let config_string = serde_json::to_string(&config).unwrap();
+
+            fs::write(config_path, config_string);
         }
     }
 
@@ -68,11 +71,11 @@ impl ConfigManager {
 #[cfg(test)]
 mod tests {
     use std::{
-        fs::{self},
+        fs::{self, File},
         path::Path,
     };
 
-    use crate::{utils::types::get_type_of};
+    use crate::{config::Config, utils::types::get_type_of};
 
     use super::ConfigManager;
 
@@ -109,8 +112,17 @@ mod tests {
     fn create_new_config_spec() {
         let new_config_name: &str = "/tmp/trustllo_new_config.json";
 
-        ConfigManager::create_config(Some(new_config_name));
+        ConfigManager::create_config(
+            String::from("teSt_key"),
+            String::from("teSt_token"),
+            Some(new_config_name),
+        );
         assert_eq!(true, Path::new(new_config_name).is_file());
+
+        let config = ConfigManager::read_config(Some(new_config_name)).unwrap();
+
+        assert_eq!(config.api_key, "teSt_key");
+        assert_eq!(config.api_token, "teSt_token");
 
         // remove the file
         fs::remove_file(new_config_name);
