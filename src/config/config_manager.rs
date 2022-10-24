@@ -28,10 +28,10 @@ impl ConfigManager {
         file.read_to_string(&mut file_contents);
         let config: Config = match serde_json::from_str(&file_contents) {
             Ok(file) => file,
-            Err(e) => return false,
+            Err(_e) => return false,
         };
 
-        config.api_key.len() > 0 && config.api_token.len() > 0
+        !config.api_key.is_empty() && !config.api_token.is_empty()
     }
 
     pub fn create_config(custom_path: Option<&str>) {
@@ -72,7 +72,7 @@ mod tests {
         path::Path,
     };
 
-    use crate::{config::Config, utils::types::get_type_of};
+    use crate::{utils::types::get_type_of};
 
     use super::ConfigManager;
 
@@ -91,7 +91,7 @@ mod tests {
         assert!(!non_existant_config_does_not_exist);
 
         // create custom config and check it's existance. Should be false because it's not a valid config
-        let custom_config = fs::write(custom_config_name, b"Hello world!");
+        let _custom_config = fs::write(custom_config_name, b"Hello world!");
         let custom_config_exists_but_wrong = ConfigManager::config_exists(Some(custom_config_name));
         assert!(!custom_config_exists_but_wrong);
 
