@@ -8,8 +8,8 @@ pub struct ConfigManager {}
 
 //TODO:  should this also be an instance instead of static?
 impl ConfigManager {
-    const DEFAULT_CONFIG_LOCATION: &str = "/Users/florian.juesten/.config/trustllo/config.json";
     // TODO: remove my name
+    const DEFAULT_CONFIG_LOCATION: &str = "/Users/florian.juesten/.config/trustllo/config.json";
     // &std::env::var("HOME").unwrap().to_owned();
     // Ok(path) => "fdjskl",
     // Err(e) => "~/.config/trustllo/config.json",
@@ -86,7 +86,7 @@ mod tests {
         path::Path,
     };
 
-    use crate::{utils::types::get_type_of};
+    use crate::utils::types::get_type_of;
 
     use super::ConfigManager;
 
@@ -150,8 +150,6 @@ mod tests {
         // read the default config
         let config = ConfigManager::read_config(None).unwrap();
         assert_eq!(get_type_of(&config), "trustllo::config::Config");
-        // TODO: this isn't really testing the parsing. just the return type. I need to add parsing
-        // later and test that also
     }
 
     #[test]
