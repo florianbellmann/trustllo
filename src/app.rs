@@ -64,18 +64,12 @@ impl ApplicationService {
 
         // TODO add functionality for custom config
         if !ConfigManager::config_exists(None) {
-            let (key, token) = Cli::read_config();
+            let (key, token, member_id) = Cli::read_config();
 
-            ConfigManager::create_config(key, token, None);
+            ConfigManager::create_config(key, token, member_id, None);
         }
 
         //TODO: load data async to get better startup
-        //
-        // Load data from trello
-        //
-        //
-        //
-
         self.api_connector.loadall().await;
 
         // optional: store/cache

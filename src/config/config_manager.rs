@@ -6,6 +6,7 @@ use std::path::Path;
 use super::Config;
 pub struct ConfigManager {}
 
+//TODO:  should this also be an instance instead of static?
 impl ConfigManager {
     const DEFAULT_CONFIG_LOCATION: &str = "/Users/florian.juesten/.config/trustllo/config.json";
     // TODO: remove my name
@@ -31,10 +32,15 @@ impl ConfigManager {
             Err(_e) => return false,
         };
 
-        !config.api_key.is_empty() && !config.api_token.is_empty()
+        !config.api_key.is_empty() && !config.api_token.is_empty() && !config.member_id.is_empty()
     }
 
-    pub fn create_config(api_key: String, api_token: String, custom_path: Option<&str>) {
+    pub fn create_config(
+        api_key: String,
+        api_token: String,
+        member_id: String,
+        custom_path: Option<&str>,
+    ) {
         let config_path = custom_path.unwrap_or(ConfigManager::DEFAULT_CONFIG_LOCATION);
 
         let file_exists = Path::new(config_path).is_file();
@@ -42,10 +48,15 @@ impl ConfigManager {
         if file_exists {
             println!("Config file already exists");
         } else {
-            let config: Config = Config { api_key, api_token };
+            let config: Config = Config {
+                api_key,
+                api_token,
+                member_id,
+            };
             let config_string = serde_json::to_string(&config).unwrap();
 
             fs::write(config_path, config_string);
+            println!("Config with contents {} created", config_string)
         }
     }
 
@@ -99,7 +110,10 @@ mod tests {
         assert!(!custom_config_exists_but_wrong);
 
         // custom config exists and is valid
-        fs::write(custom_config_name, b"{api_key:123, api_token:456}");
+        fs::write(
+            custom_config_name,
+            b"{api_key:123, api_token:456, member_id:789}",
+        );
         let custom_config_exists_but_correct =
             ConfigManager::config_exists(Some(custom_config_name));
         assert!(!custom_config_exists_but_correct);
@@ -115,6 +129,7 @@ mod tests {
         ConfigManager::create_config(
             String::from("teSt_key"),
             String::from("teSt_token"),
+            String::from("teSt_member_id"),
             Some(new_config_name),
         );
         assert_eq!(true, Path::new(new_config_name).is_file());
@@ -123,6 +138,7 @@ mod tests {
 
         assert_eq!(config.api_key, "teSt_key");
         assert_eq!(config.api_token, "teSt_token");
+        assert_eq!(config.api_key, "teSt_member_id");
 
         // remove the file
         fs::remove_file(new_config_name);
@@ -142,7 +158,10 @@ mod tests {
     fn delete_config_spec() {
         // removes config file completely
         let remove_config_name = "/tmp/trustllo_config_to_remove.json";
-        fs::write(remove_config_name, b"{api_key:123, api_token:456}");
+        fs::write(
+            remove_config_name,
+            b"{api_key:123, api_token:456, member_id:789}",
+        );
         assert!(Path::new(remove_config_name).is_file());
 
         ConfigManager::remove_config(Some(remove_config_name));

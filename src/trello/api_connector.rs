@@ -4,21 +4,16 @@ use reqwest::Method;
 
 use crate::config::config_manager::ConfigManager;
 
-pub struct ApiConnector {
-    api_key: String,
-    api_token: String,
-}
+pub struct ApiConnector {}
 
 //TODO: maybe move this struct
 //
 impl ApiConnector {
     const API_URL: &str = "https://api.trello.com/2";
+    const BOARD_NAME: &str = "Private"; // TODO: this needs to be removed
 
     pub fn new() -> ApiConnector {
-        ApiConnector {
-            api_key: env::var("API_KEY").is_ok().to_string(),
-            api_token: env::var("API_TOKEN").is_ok().to_string(),
-        }
+        ApiConnector {}
     }
 
     // TODO: refatr to the real error type
@@ -32,7 +27,6 @@ impl ApiConnector {
 
         // println!("{:#?}", resp);
 
-        ConfigManager::config_exists(None);
         self.make_request("/cards", Method::GET, "").await;
         Ok(())
     }
