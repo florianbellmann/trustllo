@@ -1,4 +1,4 @@
-use std::io::{stdin, stdout, Write};
+
 // use crossterm::{
 //     event::{DisableMouseCapture, EnableMouseCapture},
 //     execute,
@@ -45,7 +45,7 @@ use std::io::{stdin, stdout, Write};
 use crate::{
     config::config_manager::ConfigManager,
     trello::api_connector::ApiConnector,
-    ui::cli::{self, Cli},
+    ui::cli::{Cli},
 };
 
 pub struct ApplicationService {

@@ -82,11 +82,11 @@ impl ConfigManager {
 #[cfg(test)]
 mod tests {
     use std::{
-        fs::{self, File},
+        fs::{self},
         path::Path,
     };
 
-    use crate::{config::Config, utils::types::get_type_of};
+    use crate::{utils::types::get_type_of};
 
     use super::ConfigManager;
 
