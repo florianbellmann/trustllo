@@ -1,3 +1,5 @@
+use serde::{Deserialize, Serialize};
+
 pub mod api_connector;
 
 pub struct Endpoint {}
@@ -45,6 +47,7 @@ pub struct Board {
     // memberships: Membership[],
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct List {
     id: String,
     name: String,

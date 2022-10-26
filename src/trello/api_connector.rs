@@ -4,6 +4,7 @@ use std::env;
 use anyhow::{anyhow, Result};
 
 use reqwest::Method;
+use serde::Deserialize;
 
 use crate::config::config_manager::ConfigManager;
 
@@ -72,8 +73,9 @@ impl ApiConnector {
     }
     // TODO: refatr to the real error type
     pub async fn get_cards_for_list(&self, list_id: &str) -> Result<()> {
-        self.make_request(Endpoint::CARDS, Method::GET, "", None)
-            .await;
+        let list: List = self
+            .make_request(Endpoint::CARDS, Method::GET, "", None)
+            .await?;
         Ok(())
         // todo!("Not implemented yet");
     }
@@ -133,7 +135,10 @@ impl ApiConnector {
         request_method: Method,
         path: &str,
         params: Option<HashMap<&str, &str>>,
-    ) -> Result<T> {
+    ) -> Result<T>
+    where
+        T: for<'a> Deserialize<'a>,
+    {
         let client = reqwest::Client::new();
         let config = ConfigManager::read_config(None).unwrap(); //TODO: this is also still hardcoded
 
@@ -154,18 +159,11 @@ impl ApiConnector {
         println!("{:#?}", request_url);
 
         let resp = reqwest::get(request_url).await?;
+        let jsonn = resp.json::<T>().await?;
 
-        serde deseriablize from response?
+        // println!("{:#?}", &jsonn);
 
-        let jsonn = {
-            let full = resp.bytes().await?;
-
-            serde_json::from_slice(&full).map_err(reqwest::error::decode)
-        }.await;
-
-        println!("{:#?}", resp);
-
-        Ok(())
+        Ok(jsonn)
     }
 
     fn transform_params_to_query<'a>(params: HashMap<&'a str, &'a str>) -> &'a str {
