@@ -1,4 +1,3 @@
-
 // use crossterm::{
 //     event::{DisableMouseCapture, EnableMouseCapture},
 //     execute,
@@ -43,9 +42,7 @@
 //
 
 use crate::{
-    config::config_manager::ConfigManager,
-    trello::api_connector::ApiConnector,
-    ui::cli::{Cli},
+    config::config_manager::ConfigManager, trello::api_connector::ApiConnector, ui::cli::Cli,
 };
 
 pub struct ApplicationService {
@@ -70,7 +67,9 @@ impl ApplicationService {
         }
 
         //TODO: load data async to get better startup
-        self.api_connector.loadall().await;
+        self.api_connector.init().await;
+        let lists = self.api_connector.get_lists_on_board("").await;
+        // println!(":?", format!("{}", lists));
 
         // optional: store/cache
 
