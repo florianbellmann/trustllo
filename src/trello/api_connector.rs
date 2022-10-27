@@ -1,7 +1,7 @@
-use std::env;
-use std::{collections::HashMap, fmt::Display};
 
-use anyhow::{anyhow, Result};
+use std::{collections::HashMap};
+
+use anyhow::{Result};
 
 use reqwest::Method;
 use serde::Deserialize;
@@ -28,7 +28,7 @@ impl ApiConnector {
     // boards
     // ----------------------------------------------------------------------------------------------------------------
     pub async fn get_boards(&self) -> Result<Vec<Board>> {
-        let mut params = HashMap::new();
+        let params = HashMap::new();
 
         let config = ConfigManager::read_config(None).unwrap(); //TODO: this is also still hardcoded
 
@@ -45,12 +45,12 @@ impl ApiConnector {
 
     // lists
     // ----------------------------------------------------------------------------------------------------------------
-    pub async fn get_lists_on_board(&self, board_id: &str) -> Result<()> {
+    pub async fn get_lists_on_board(&self, _board_id: &str) -> Result<()> {
         let mut params = HashMap::new();
 
         params.insert("testekey", "testevalue");
 
-        let lists: List = self
+        let _lists: List = self
             .make_request(
                 Endpoint::LISTS,
                 Method::GET,
@@ -68,30 +68,30 @@ impl ApiConnector {
     // ) -> Result<()> {
     //     todo!("Not implemented yet");
     // }
-    pub async fn get_labels_for_board(&self, board_id: &str) -> Result<()> {
+    pub async fn get_labels_for_board(&self, _board_id: &str) -> Result<()> {
         todo!("Not implemented yet");
     }
-    pub async fn get_actions_on_board(&self, board_id: &str) -> Result<()> {
+    pub async fn get_actions_on_board(&self, _board_id: &str) -> Result<()> {
         todo!("Not implemented yet");
     }
-    pub async fn add_label_to_card(&self, card_id: &str, label_id: &str) -> Result<()> {
+    pub async fn add_label_to_card(&self, _card_id: &str, _label_id: &str) -> Result<()> {
         todo!("Not implemented yet");
     }
-    pub async fn delete_label_from_card(&self, card_id: &str, label_id: &str) -> Result<()> {
+    pub async fn delete_label_from_card(&self, _card_id: &str, _label_id: &str) -> Result<()> {
         todo!("Not implemented yet");
     }
-    pub async fn add_due_date_to_card(&self, card_id: &str, date_value: &str) -> Result<()> {
+    pub async fn add_due_date_to_card(&self, _card_id: &str, _date_value: &str) -> Result<()> {
         todo!("Not implemented yet");
     }
 
     // cards
     // ----------------------------------------------------------------------------------------------------------------
-    pub async fn get_card(&self, board_id: &str, card_id: &str) -> Result<()> {
+    pub async fn get_card(&self, _board_id: &str, _card_id: &str) -> Result<()> {
         todo!("Not implemented yet");
     }
     // TODO: refatr to the real error type
-    pub async fn get_cards_for_list(&self, list_id: &str) -> Result<()> {
-        let list: List = self
+    pub async fn get_cards_for_list(&self, _list_id: &str) -> Result<()> {
+        let _list: List = self
             .make_request(Endpoint::CARDS, Method::GET, "".to_string(), None)
             .await?;
         Ok(())
@@ -100,41 +100,41 @@ impl ApiConnector {
     // pub async fn get_cards_on_board(&self, board_id: &str) -> Result<()> {
     //     todo!("Not implemented yet");
     // }
-    pub async fn add_card(&self, name: &str, description: &str, list_id: &str) -> Result<()> {
+    pub async fn add_card(&self, _name: &str, _description: &str, _list_id: &str) -> Result<()> {
         todo!("Not implemented yet");
     }
-    pub async fn add_checklist_to_card(&self, card_id: &str, name: &str) -> Result<()> {
+    pub async fn add_checklist_to_card(&self, _card_id: &str, _name: &str) -> Result<()> {
         todo!("Not implemented yet");
     }
-    pub async fn get_checklists_on_card(&self, card_id: &str) -> Result<()> {
+    pub async fn get_checklists_on_card(&self, _card_id: &str) -> Result<()> {
         todo!("Not implemented yet");
     }
     pub async fn add_item_to_checklist(
         &self,
-        check_list_id: &str,
-        name: &str,
-        pos: &str,
+        _check_list_id: &str,
+        _name: &str,
+        _pos: &str,
     ) -> Result<()> {
         todo!("Not implemented yet");
     }
-    pub async fn update_card(&self, card_id: &str, field: &str, value: &str) -> Result<()> {
+    pub async fn update_card(&self, _card_id: &str, _field: &str, _value: &str) -> Result<()> {
         todo!("Not implemented yet");
     }
     pub async fn update_checklist(
         &self,
-        checklist_id: &str,
-        field: &str,
-        value: &str,
+        _checklist_id: &str,
+        _field: &str,
+        _value: &str,
     ) -> Result<()> {
         todo!("Not implemented yet");
     }
-    pub async fn update_card_name(&self, card_id: &str, name: &str) -> Result<()> {
+    pub async fn update_card_name(&self, _card_id: &str, _name: &str) -> Result<()> {
         todo!("Not implemented yet");
     }
-    pub async fn update_card_description(&self, card_id: &str, description: &str) -> Result<()> {
+    pub async fn update_card_description(&self, _card_id: &str, _description: &str) -> Result<()> {
         todo!("Not implemented yet");
     }
-    pub async fn delete_card(&self, card_id: &str) -> Result<()> {
+    pub async fn delete_card(&self, _card_id: &str) -> Result<()> {
         todo!("Not implemented yet");
     }
     // pub async fn update_card_list(
@@ -161,7 +161,7 @@ impl ApiConnector {
 
         let request_url = format!("{}{}{}", ApiConnector::API_URL, endpoint, path,);
 
-        let mut url_params = params.unwrap_or(HashMap::new());
+        let mut url_params = params.unwrap_or_default();
         url_params.insert("key", &config.api_key);
         url_params.insert("token", &config.api_token);
 
@@ -190,7 +190,7 @@ impl ApiConnector {
 mod tests {
     use crate::trello::api_connector::ApiConnector;
     use crate::utils::types::get_type_of;
-    use anyhow::{anyhow, Result};
+    use anyhow::{Result};
 
     #[tokio::test]
     async fn get_boards_spec() -> Result<()> {
@@ -201,9 +201,8 @@ mod tests {
             get_type_of(&boards),
             "alloc::vec::Vec<trustllo::trello::Board>"
         );
-        assert!(boards.first().unwrap().id.len() > 0);
-        assert!(boards.first().unwrap().name.len() > 0);
-        assert!(boards.first().unwrap().desc.len() > 0);
+        assert!(!boards.first().unwrap().id.is_empty());
+        assert!(!boards.first().unwrap().name.is_empty());
         Ok(())
     }
 
