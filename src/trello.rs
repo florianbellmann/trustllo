@@ -14,6 +14,7 @@ impl Endpoint {
     pub const CHECKLISTS: &str = "/checklists";
 }
 
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Board {
     name: String,
     desc: String,
@@ -47,17 +48,18 @@ pub struct Board {
     // memberships: Membership[],
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct List {
-    id: String,
-    name: String,
-    closed: bool,
+    pub id: String,
+    pub name: String,
+    pub closed: bool,
     // pos: uint,
     // softLimit: null,
-    idBoard: String,
-    subscribed: bool,
+    pub idBoard: String,
+    pub subscribed: bool,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Card {
     id: String,
     // checkItemStates: null,
@@ -91,5 +93,7 @@ pub struct Card {
     // cover: Cover,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Label {}
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Checklist {}

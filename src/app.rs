@@ -1,3 +1,4 @@
+use anyhow::{anyhow, Result};
 // use crossterm::{
 //     event::{DisableMouseCapture, EnableMouseCapture},
 //     execute,
@@ -56,7 +57,7 @@ impl ApplicationService {
         }
     }
 
-    pub async fn init(&self) {
+    pub async fn init(&self) -> Result<()> {
         println!("Initializing the app...");
 
         // TODO add functionality for custom config
@@ -68,8 +69,9 @@ impl ApplicationService {
 
         //TODO: load data async to get better startup
         self.api_connector.init().await;
-        let lists = self.api_connector.get_lists_on_board("").await;
-        // println!(":?", format!("{}", lists));
+        let boards = self.api_connector.get_boards().await?;
+        // let lists = self.api_connector.get_lists_on_board("").await;
+        println!("{:?}", boards);
 
         // optional: store/cache
 
@@ -107,6 +109,7 @@ impl ApplicationService {
         // display data
 
         // init keyboard listener
+        Ok(())
     }
 
     pub fn teardown(&self) {

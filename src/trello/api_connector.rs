@@ -1,5 +1,5 @@
-use std::collections::HashMap;
 use std::env;
+use std::{collections::HashMap, fmt::Display};
 
 use anyhow::{anyhow, Result};
 
@@ -8,26 +8,39 @@ use serde::Deserialize;
 
 use crate::config::config_manager::ConfigManager;
 
-use super::{Endpoint, List};
+use super::{Board, Endpoint, List};
 
 pub struct ApiConnector {}
 
 //TODO: maybe move this struct
 //
 impl ApiConnector {
-    const API_URL: &str = "https://api.trello.com/2";
+    const API_URL: &str = "https://api.trello.com/1";
     const BOARD_NAME: &str = "Private"; // TODO: this needs to be removed
 
     pub fn new() -> ApiConnector {
         ApiConnector {}
     }
 
+    //TODO: load data async to get better startup
     pub async fn init(&self) {}
 
     // boards
     // ----------------------------------------------------------------------------------------------------------------
-    pub async fn get_boards(&self, member_id: &str) -> Result<()> {
-        todo!("Not implemented yet");
+    pub async fn get_boards(&self) -> Result<Vec<Board>> {
+        let mut params = HashMap::new();
+
+        let config = ConfigManager::read_config(None).unwrap(); //TODO: this is also still hardcoded
+
+        let boards: Vec<Board> = self
+            .make_request(
+                Endpoint::MEMBERS,
+                Method::GET,
+                format!("/{}/boards", config.member_id),
+                Some(params),
+            )
+            .await?;
+        Ok(boards)
     }
 
     // lists
@@ -38,7 +51,12 @@ impl ApiConnector {
         params.insert("testekey", "testevalue");
 
         let lists: List = self
-            .make_request(Endpoint::LISTS, Method::GET, "/pathtest", Some(params))
+            .make_request(
+                Endpoint::LISTS,
+                Method::GET,
+                "/pathtest".to_string(),
+                Some(params),
+            )
             .await?;
         // }
         Ok(())
@@ -74,7 +92,7 @@ impl ApiConnector {
     // TODO: refatr to the real error type
     pub async fn get_cards_for_list(&self, list_id: &str) -> Result<()> {
         let list: List = self
-            .make_request(Endpoint::CARDS, Method::GET, "", None)
+            .make_request(Endpoint::CARDS, Method::GET, "".to_string(), None)
             .await?;
         Ok(())
         // todo!("Not implemented yet");
@@ -133,70 +151,61 @@ impl ApiConnector {
         &self,
         endpoint: &str,
         request_method: Method,
-        path: &str,
+        path: String,
         params: Option<HashMap<&str, &str>>,
     ) -> Result<T>
     where
         T: for<'a> Deserialize<'a>,
     {
-        let client = reqwest::Client::new();
-        let config = ConfigManager::read_config(None).unwrap(); //TODO: this is also still hardcoded
+        let config = ConfigManager::read_config(None).unwrap(); //TODO: static config is also still hardcoded
 
-        let request_builder = client.request(request_method, "https://httpbin.org/ip");
-        request_builder.header("Accept", "application/json");
+        let request_url = format!("{}{}{}", ApiConnector::API_URL, endpoint, path,);
 
-        let url_params = ApiConnector::transform_params_to_query(params.unwrap_or(HashMap::new()));
-        let auth_params = format!("&key={}&token={}", config.api_key, config.api_token);
+        let mut url_params = params.unwrap_or(HashMap::new());
+        url_params.insert("key", &config.api_key);
+        url_params.insert("token", &config.api_token);
 
-        let request_url = format!(
-            "{}{}{}?{}{}",
-            ApiConnector::API_URL,
-            endpoint,
-            path,
-            auth_params,
-            url_params
-        );
-        println!("{:#?}", request_url);
+        let client = reqwest::Client::builder().build()?;
+        let res = match request_method {
+            Method::GET => client.get(&request_url),
+            Method::POST => client.post(&request_url),
+            Method::PATCH => client.patch(&request_url),
+            Method::PUT => client.put(&request_url),
+            Method::DELETE => client.delete(&request_url),
+            _ => client.get(&request_url),
+        };
+        let response_json = res
+            .query(&url_params)
+            .header("Accept", "application/json")
+            .send()
+            .await?
+            .json::<T>()
+            .await?;
 
-        let resp = reqwest::get(request_url).await?;
-        let jsonn = resp.json::<T>().await?;
-
-        // println!("{:#?}", &jsonn);
-
-        Ok(jsonn)
-    }
-
-    fn transform_params_to_query<'a>(params: HashMap<&'a str, &'a str>) -> &'a str {
-        let mut params_as_string = "";
-
-        for (key, value) in params {
-            println!("{} / {}", key, value);
-            // params_as_string = format!("{}&{}={}", params_as_string, &key, &value);
-            params_as_string = "";
-        }
-
-        params_as_string
+        Ok(response_json)
     }
 }
 
 #[cfg(test)]
 mod tests {
-    // #[test]
-    // fn load_lists_from_board() {}
+    use crate::trello::api_connector::ApiConnector;
+    use crate::utils::types::get_type_of;
+    use anyhow::{anyhow, Result};
 
-    //TODO: readd tests
-    // #[test]
-    // fn read_env_api_key() {
-    //     let apiKey = env::var("API_KEY").is_ok();
-    //     assert_ne!(false, apiKey)
-    // }
-
-    // #[test]
-    // fn read_env_api_token() {
-    //     let apiToken = env::var("API_TOKEN").is_ok();
-    //     assert_ne!(false, apiToken)
-    // }
-    //
+    #[tokio::test]
+    async fn get_boards_spec() -> Result<()> {
+        // load boards and verify parsed result type
+        let api_connector = ApiConnector::new();
+        let boards = api_connector.get_boards().await?;
+        assert_eq!(
+            get_type_of(&boards),
+            "alloc::vec::Vec<trustllo::trello::Board>"
+        );
+        assert!(boards.first().unwrap().id.len() > 0);
+        assert!(boards.first().unwrap().name.len() > 0);
+        assert!(boards.first().unwrap().desc.len() > 0);
+        Ok(())
+    }
 
     // Reasoning behind testing with mock responses:
     // We want to always be sure the actual api responses still work with this application. Therefore we
