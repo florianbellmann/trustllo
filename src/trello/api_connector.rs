@@ -1,7 +1,6 @@
+use std::collections::HashMap;
 
-use std::{collections::HashMap};
-
-use anyhow::{Result};
+use anyhow::Result;
 
 use reqwest::Method;
 use serde::Deserialize;
@@ -16,7 +15,6 @@ pub struct ApiConnector {}
 //
 impl ApiConnector {
     const API_URL: &str = "https://api.trello.com/1";
-    const BOARD_NAME: &str = "Private"; // TODO: this needs to be removed
 
     pub fn new() -> ApiConnector {
         ApiConnector {}
@@ -61,35 +59,14 @@ impl ApiConnector {
         // }
         Ok(())
     }
-    // pub async fn get_lists_on_board_by_filter(
-    //     &self,
-    //     board_id: &str,
-    //     filter: &str,
-    // ) -> Result<()> {
-    //     todo!("Not implemented yet");
-    // }
-    pub async fn get_labels_for_board(&self, _board_id: &str) -> Result<()> {
-        todo!("Not implemented yet");
-    }
-    pub async fn get_actions_on_board(&self, _board_id: &str) -> Result<()> {
-        todo!("Not implemented yet");
-    }
-    pub async fn add_label_to_card(&self, _card_id: &str, _label_id: &str) -> Result<()> {
-        todo!("Not implemented yet");
-    }
-    pub async fn delete_label_from_card(&self, _card_id: &str, _label_id: &str) -> Result<()> {
-        todo!("Not implemented yet");
-    }
-    pub async fn add_due_date_to_card(&self, _card_id: &str, _date_value: &str) -> Result<()> {
-        todo!("Not implemented yet");
-    }
+
 
     // cards
     // ----------------------------------------------------------------------------------------------------------------
     pub async fn get_card(&self, _board_id: &str, _card_id: &str) -> Result<()> {
         todo!("Not implemented yet");
     }
-    // TODO: refatr to the real error type
+
     pub async fn get_cards_for_list(&self, _list_id: &str) -> Result<()> {
         let _list: List = self
             .make_request(Endpoint::CARDS, Method::GET, "".to_string(), None)
@@ -97,18 +74,34 @@ impl ApiConnector {
         Ok(())
         // todo!("Not implemented yet");
     }
-    // pub async fn get_cards_on_board(&self, board_id: &str) -> Result<()> {
-    //     todo!("Not implemented yet");
-    // }
+
+    pub async fn get_labels_for_board(&self, _board_id: &str) -> Result<()> {
+        todo!("Not implemented yet");
+    }
+
+    pub async fn add_label_to_card(&self, _card_id: &str, _label_id: &str) -> Result<()> {
+        todo!("Not implemented yet");
+    }
+
+    pub async fn delete_label_from_card(&self, _card_id: &str, _label_id: &str) -> Result<()> {
+        todo!("Not implemented yet");
+    }
+
+    pub async fn add_due_date_to_card(&self, _card_id: &str, _date_value: &str) -> Result<()> {
+        todo!("Not implemented yet");
+    }
     pub async fn add_card(&self, _name: &str, _description: &str, _list_id: &str) -> Result<()> {
         todo!("Not implemented yet");
     }
+
     pub async fn add_checklist_to_card(&self, _card_id: &str, _name: &str) -> Result<()> {
         todo!("Not implemented yet");
     }
+
     pub async fn get_checklists_on_card(&self, _card_id: &str) -> Result<()> {
         todo!("Not implemented yet");
     }
+
     pub async fn add_item_to_checklist(
         &self,
         _check_list_id: &str,
@@ -117,9 +110,11 @@ impl ApiConnector {
     ) -> Result<()> {
         todo!("Not implemented yet");
     }
+
     pub async fn update_card(&self, _card_id: &str, _field: &str, _value: &str) -> Result<()> {
         todo!("Not implemented yet");
     }
+
     pub async fn update_checklist(
         &self,
         _checklist_id: &str,
@@ -128,25 +123,20 @@ impl ApiConnector {
     ) -> Result<()> {
         todo!("Not implemented yet");
     }
+
     pub async fn update_card_name(&self, _card_id: &str, _name: &str) -> Result<()> {
         todo!("Not implemented yet");
     }
+
     pub async fn update_card_description(&self, _card_id: &str, _description: &str) -> Result<()> {
         todo!("Not implemented yet");
     }
+
     pub async fn delete_card(&self, _card_id: &str) -> Result<()> {
         todo!("Not implemented yet");
     }
-    // pub async fn update_card_list(
-    //     &self,
-    //     card_id: &str,
-    //     list_id: &str,
-    // ) -> Result<()> {
-    //     todo!("Not implemented yet");
-    // }
 
     // ----------------------------------------------------------------------------------------------------------------
-    // TODO: pass also params
     async fn make_request<T>(
         &self,
         endpoint: &str,
@@ -190,7 +180,13 @@ impl ApiConnector {
 mod tests {
     use crate::trello::api_connector::ApiConnector;
     use crate::utils::types::get_type_of;
-    use anyhow::{Result};
+    use anyhow::Result;
+
+    // INFO: 
+    // Reasoning behind testing with mock responses:
+    // We want to always be sure the actual api responses still work with this application. Therefore we
+    // need to validate the schemas for the responses. Based on these schemas we can then also do mocks,
+    // which we use for testing other components of this application.
 
     #[tokio::test]
     async fn get_boards_spec() -> Result<()> {
@@ -205,9 +201,4 @@ mod tests {
         assert!(!boards.first().unwrap().name.is_empty());
         Ok(())
     }
-
-    // Reasoning behind testing with mock responses:
-    // We want to always be sure the actual api responses still work with this application. Therefore we
-    // need to validate the schemas for the responses. Based on these schemas we can then also do mocks,
-    // which we use for testing other components of this application.
 }
