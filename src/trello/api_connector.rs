@@ -7,7 +7,7 @@ use serde::Deserialize;
 
 use crate::config::config_manager::ConfigManager;
 
-use super::{Board, Endpoint, List};
+use super::{Board, Card, Endpoint, List};
 
 pub struct ApiConnector {}
 
@@ -23,11 +23,26 @@ impl ApiConnector {
     //TODO: load data async to get better startup
     pub async fn init(&self) {}
 
+    // const initialBoard = await this._trelloConnector.getBoardByName(this.getInitialBoardName())
+    //         await this._trelloConnector.archiveCard(actionCard)
+    //         await this._trelloConnector.unArchiveCard(lastCard)
+    //         await this._trelloConnector.changeDate(actionCard, dateStringToDate(newDateString))
+    //       // await this._trelloConnector.
+    //         await this._trelloConnector.changeTitle(actionCard, newTitle)
+    //         await this._trelloConnector.appendCard(appendName, (await this._storageProvider.getCurrentList()).id)
+    //         await this._trelloConnector.prependCard(prependName, (await this._storageProvider.getCurrentList()).id)
+    //         await this._trelloConnector.switchBoard()
+    //         await this._trelloConnector.switchListRight()
+    //         await this._trelloConnector.switchListLeft()
+    //           await this._trelloConnector.cardDown(currentCardDown, nextCard.pos + 1)
+    //           await this._trelloConnector.cardDown(currentCardUp, prevCard.pos - 1)
+    //         await this._trelloConnector.moveToToday(actionCard)
+    //         await this._trelloConnector.moveToTomorrow(actionCard)
+    //         await this._trelloConnector.changeDescription(actionCard, newDesc)
+
     // boards
     // ----------------------------------------------------------------------------------------------------------------
     pub async fn get_boards(&self) -> Result<Vec<Board>> {
-        let params = HashMap::new();
-
         let config = ConfigManager::read_config(None).unwrap(); //TODO: this is also still hardcoded
 
         let boards: Vec<Board> = self
@@ -35,7 +50,7 @@ impl ApiConnector {
                 Endpoint::MEMBERS,
                 Method::GET,
                 format!("/{}/boards", config.member_id),
-                Some(params),
+                None,
             )
             .await?;
         Ok(boards)
@@ -43,41 +58,39 @@ impl ApiConnector {
 
     // lists
     // ----------------------------------------------------------------------------------------------------------------
-    pub async fn get_lists_on_board(&self, _board_id: &str) -> Result<()> {
-        let mut params = HashMap::new();
-
-        params.insert("testekey", "testevalue");
-
-        let _lists: List = self
+    pub async fn get_lists_on_board(&self, board_id: &str) -> Result<Vec<List>> {
+        let lists: Vec<List> = self
             .make_request(
-                Endpoint::LISTS,
+                Endpoint::BOARDS,
                 Method::GET,
-                "/pathtest".to_string(),
-                Some(params),
+                format!("/{}/lists", board_id),
+                None,
             )
             .await?;
-        // }
-        Ok(())
+        Ok(lists)
     }
-
 
     // cards
     // ----------------------------------------------------------------------------------------------------------------
-    pub async fn get_card(&self, _board_id: &str, _card_id: &str) -> Result<()> {
-        todo!("Not implemented yet");
-    }
+    // pub async fn get_card(&self, _board_id: &str, _card_id: &str) -> Result<()> {
+    //     todo!("Not implemented yet");
+    // }
 
-    pub async fn get_cards_for_list(&self, _list_id: &str) -> Result<()> {
-        let _list: List = self
-            .make_request(Endpoint::CARDS, Method::GET, "".to_string(), None)
+    pub async fn get_cards_for_list(&self, list_id: &str) -> Result<Vec<Card>> {
+        let cards: Vec<Card> = self
+            .make_request(
+                Endpoint::LISTS,
+                Method::GET,
+                format!("/{}/cards", list_id),
+                None,
+            )
             .await?;
-        Ok(())
-        // todo!("Not implemented yet");
+        Ok(cards)
     }
 
-    pub async fn get_labels_for_board(&self, _board_id: &str) -> Result<()> {
-        todo!("Not implemented yet");
-    }
+    // pub async fn get_labels_for_board(&self, _board_id: &str) -> Result<()> {
+    //     todo!("Not implemented yet");
+    // }
 
     pub async fn add_label_to_card(&self, _card_id: &str, _label_id: &str) -> Result<()> {
         todo!("Not implemented yet");
@@ -90,8 +103,21 @@ impl ApiConnector {
     pub async fn add_due_date_to_card(&self, _card_id: &str, _date_value: &str) -> Result<()> {
         todo!("Not implemented yet");
     }
-    pub async fn add_card(&self, _name: &str, _description: &str, _list_id: &str) -> Result<()> {
-        todo!("Not implemented yet");
+    pub async fn add_card(&self, name: &str, description: &str, list_id: &str) -> Result<()> {
+        let mut params = HashMap::new();
+        params.insert("idList", list_id);
+        params.insert("name", name);
+        params.insert("desc", description);
+
+        let card: Card = self
+            .make_request(
+                Endpoint::CARDS,
+                Method::POST,
+                format!("/cards"),
+                Some(params),
+            )
+            .await?;
+        Ok(())
     }
 
     pub async fn add_checklist_to_card(&self, _card_id: &str, _name: &str) -> Result<()> {
@@ -182,7 +208,7 @@ mod tests {
     use crate::utils::types::get_type_of;
     use anyhow::Result;
 
-    // INFO: 
+    // INFO:
     // Reasoning behind testing with mock responses:
     // We want to always be sure the actual api responses still work with this application. Therefore we
     // need to validate the schemas for the responses. Based on these schemas we can then also do mocks,
@@ -199,6 +225,42 @@ mod tests {
         );
         assert!(!boards.first().unwrap().id.is_empty());
         assert!(!boards.first().unwrap().name.is_empty());
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn get_lists_on_board_spec() -> Result<()> {
+        // load lists on a board and verify parsed result type
+        let board_id = std::env::var("BOARD_ID").unwrap().to_owned();
+        let api_connector = ApiConnector::new();
+        let lists = api_connector.get_lists_on_board(&board_id).await?;
+        assert_eq!(
+            get_type_of(&lists),
+            "alloc::vec::Vec<trustllo::trello::List>"
+        );
+        assert!(!lists.first().unwrap().id.is_empty());
+        assert!(!lists.first().unwrap().name.is_empty());
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn get_cards_for_list_spec() -> Result<()> {
+        // load cards on a list and verify parsed result type
+        let list_id = std::env::var("LIST_ID").unwrap().to_owned();
+        let api_connector = ApiConnector::new();
+        let cards = api_connector.get_cards_for_list(&list_id).await?;
+        assert_eq!(
+            get_type_of(&cards),
+            "alloc::vec::Vec<trustllo::trello::Card>"
+        );
+        assert!(!cards.first().unwrap().id.is_empty());
+        assert!(!cards.first().unwrap().name.is_empty());
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn add_card_spec() -> Result<()> {
+        // TODO: to test this I need a test board for development
         Ok(())
     }
 }

@@ -1,4 +1,4 @@
-use anyhow::{Result};
+use anyhow::Result;
 // use crossterm::{
 //     event::{DisableMouseCapture, EnableMouseCapture},
 //     execute,
@@ -69,9 +69,12 @@ impl ApplicationService {
 
         //TODO: load data async to get better startup
         self.api_connector.init().await;
-        let boards = self.api_connector.get_boards().await?;
+        // let boards = self.api_connector.get_boards().await?;
+        let lists = self
+            .api_connector
+            .get_lists_on_board("5d303412772e7d06ea89c4de").await?;
         // let lists = self.api_connector.get_lists_on_board("").await;
-        println!("{:?}", boards);
+        println!("{:?}", lists);
 
         // optional: store/cache
 
