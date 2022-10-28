@@ -109,11 +109,11 @@ impl ApiConnector {
         params.insert("name", name);
         params.insert("desc", description);
 
-        let card: Card = self
+        let _card: Card = self
             .make_request(
                 Endpoint::CARDS,
                 Method::POST,
-                format!("/cards"),
+                "/cards".to_string(),
                 Some(params),
             )
             .await?;
