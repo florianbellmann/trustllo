@@ -17,8 +17,8 @@ impl ConfigManager {
 
     pub fn config_exists(custom_path: Option<&str>) -> bool {
         let config_path = custom_path.unwrap_or(ConfigManager::DEFAULT_CONFIG_LOCATION);
-        println!("{:?}", config_path);
-        println!("{:?}", Path::new(config_path).is_file());
+        // println!("{:?}", config_path);
+        // println!("{:?}", Path::new(config_path).is_file());
 
         if !Path::new(config_path).is_file() {
             return false;

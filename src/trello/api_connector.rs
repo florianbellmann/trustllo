@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 
-use anyhow::Result;
+use anyhow::{anyhow, ensure, Context, Error, Result};
 
-use reqwest::Method;
-use serde::Deserialize;
+use reqwest::{Method, StatusCode};
+use serde::{Deserialize, Serializer};
 
 use crate::config::config_manager::ConfigManager;
 
@@ -103,21 +103,16 @@ impl ApiConnector {
     pub async fn add_due_date_to_card(&self, _card_id: &str, _date_value: &str) -> Result<()> {
         todo!("Not implemented yet");
     }
-    pub async fn add_card(&self, name: &str, description: &str, list_id: &str) -> Result<()> {
+    pub async fn add_card(&self, name: &str, description: &str, list_id: &str) -> Result<Card> {
         let mut params = HashMap::new();
         params.insert("idList", list_id);
         params.insert("name", name);
         params.insert("desc", description);
 
-        let _card: Card = self
-            .make_request(
-                Endpoint::CARDS,
-                Method::POST,
-                "/cards".to_string(),
-                Some(params),
-            )
+        let card: Card = self
+            .make_request(Endpoint::CARDS, Method::POST, "".to_string(), Some(params))
             .await?;
-        Ok(())
+        Ok(card)
     }
 
     pub async fn add_checklist_to_card(&self, _card_id: &str, _name: &str) -> Result<()> {
@@ -182,7 +177,7 @@ impl ApiConnector {
         url_params.insert("token", &config.api_token);
 
         let client = reqwest::Client::builder().build()?;
-        let res = match request_method {
+        let request = match request_method {
             Method::GET => client.get(&request_url),
             Method::POST => client.post(&request_url),
             Method::PATCH => client.patch(&request_url),
@@ -190,15 +185,36 @@ impl ApiConnector {
             Method::DELETE => client.delete(&request_url),
             _ => client.get(&request_url),
         };
-        let response_json = res
+        let response = request
             .query(&url_params)
             .header("Accept", "application/json")
             .send()
-            .await?
-            .json::<T>()
             .await?;
 
-        Ok(response_json)
+        match response.status() {
+            StatusCode::OK => match response.json::<T>().await {
+                Ok(response_data) => Ok(response_data),
+                Err(e) => {
+                    let error_msg = format!("ERROR: Failed to parse the Api response. {}", e);
+                    println!("{}", error_msg);
+                    Err(anyhow!(error_msg))
+                }
+            },
+            _ => {
+                let response_status = response.status();
+                match response.text().await {
+                    Ok(response_text) => {
+                        let error_msg = format!(
+                            "ERROR calling the Api. \n  Status code '{}' was received. \n  Message: '{}'\n  Url: '{}'\n  Params: '{:#}'",
+                            response_status, response_text,request_url,serde_json::to_string(&url_params).unwrap()
+                        );
+                        println!("{}", error_msg);
+                        Err(anyhow!(error_msg))
+                    }
+                    Err(e) => panic!("ERROR: Completely failed Api call. {}", e),
+                }
+            }
+        }
     }
 }
 
@@ -260,7 +276,19 @@ mod tests {
 
     #[tokio::test]
     async fn add_card_spec() -> Result<()> {
-        // TODO: to test this I need a test board for development
+        // add a card to a list
+        let list_id = std::env::var("LIST_ID").unwrap().to_owned();
+        let api_connector = ApiConnector::new();
+        let result_card = api_connector
+            .add_card("Test card name", "test description", &list_id)
+            .await;
+        assert_eq!(
+            get_type_of(&result_card),
+            "alloc::vec::Vec<trustllo::trello::Card>"
+        );
+        // assert!(!&result_card.unwrap().id.is_empty());
+        // assert!(!&result_card.unwrap().name.is_empty());
+
         Ok(())
     }
 }
