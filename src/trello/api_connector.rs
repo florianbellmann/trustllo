@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 
-use anyhow::{anyhow, ensure, Context, Error, Result};
+use anyhow::{anyhow, Result};
 
 use reqwest::{Method, StatusCode};
-use serde::{Deserialize, Serializer};
+use serde::{Deserialize};
 
 use crate::config::config_manager::ConfigManager;
 
