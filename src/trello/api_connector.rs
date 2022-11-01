@@ -1,3 +1,4 @@
+// use backtrace::Backtrace;
 use std::collections::HashMap;
 
 use anyhow::{anyhow, Result};
@@ -24,11 +25,6 @@ impl ApiConnector {
     pub async fn init(&self) {}
 
     // const initialBoard = await this._trelloConnector.getBoardByName(this.getInitialBoardName())
-    //         await this._trelloConnector.archiveCard(actionCard)
-    //         await this._trelloConnector.unArchiveCard(lastCard)
-    //         await this._trelloConnector.changeDate(actionCard, dateStringToDate(newDateString))
-    //       // await this._trelloConnector.
-    //         await this._trelloConnector.changeTitle(actionCard, newTitle)
     //         await this._trelloConnector.appendCard(appendName, (await this._storageProvider.getCurrentList()).id)
     //         await this._trelloConnector.prependCard(prependName, (await this._storageProvider.getCurrentList()).id)
     //         await this._trelloConnector.switchBoard()
@@ -38,7 +34,6 @@ impl ApiConnector {
     //           await this._trelloConnector.cardDown(currentCardUp, prevCard.pos - 1)
     //         await this._trelloConnector.moveToToday(actionCard)
     //         await this._trelloConnector.moveToTomorrow(actionCard)
-    //         await this._trelloConnector.changeDescription(actionCard, newDesc)
 
     // boards
     // ----------------------------------------------------------------------------------------------------------------
@@ -72,10 +67,6 @@ impl ApiConnector {
 
     // cards
     // ----------------------------------------------------------------------------------------------------------------
-    // pub async fn get_card(&self, _board_id: &str, _card_id: &str) -> Result<()> {
-    //     todo!("Not implemented yet");
-    // }
-
     pub async fn get_cards_on_list(&self, list_id: &str) -> Result<Vec<Card>> {
         let cards: Vec<Card> = self
             .make_request(
@@ -88,21 +79,10 @@ impl ApiConnector {
         Ok(cards)
     }
 
-    // pub async fn get_labels_for_board(&self, _board_id: &str) -> Result<()> {
-    //     todo!("Not implemented yet");
-    // }
-
-    pub async fn add_label_to_card(&self, _card_id: &str, _label_id: &str) -> Result<()> {
+    pub async fn get_card(&self, _board_id: &str, _card_id: &str) -> Result<()> {
         todo!("Not implemented yet");
     }
 
-    pub async fn delete_label_from_card(&self, _card_id: &str, _label_id: &str) -> Result<()> {
-        todo!("Not implemented yet");
-    }
-
-    pub async fn add_due_date_to_card(&self, _card_id: &str, _date_value: &str) -> Result<()> {
-        todo!("Not implemented yet");
-    }
     pub async fn add_card(&self, name: &str, description: &str, list_id: &str) -> Result<Card> {
         let mut params = HashMap::new();
         params.insert("idList", list_id);
@@ -112,38 +92,55 @@ impl ApiConnector {
         let card: Card = self
             .make_request(Endpoint::CARDS, Method::POST, "".to_string(), Some(params))
             .await?;
+
         Ok(card)
     }
 
-    pub async fn add_checklist_to_card(&self, _card_id: &str, _name: &str) -> Result<()> {
+    pub async fn archive_card(&self) -> Result<()> {
         todo!("Not implemented yet");
     }
 
-    pub async fn get_checklists_on_card(&self, _card_id: &str) -> Result<()> {
+    pub async fn un_archive_card(&self) -> Result<()> {
         todo!("Not implemented yet");
     }
 
-    pub async fn add_item_to_checklist(
-        &self,
-        _check_list_id: &str,
-        _name: &str,
-        _pos: &str,
-    ) -> Result<()> {
+    pub async fn delete_card(&self, _card_id: &str) -> Result<()> {
         todo!("Not implemented yet");
     }
+
+    // pub async fn add_checklist_to_card(&self, _card_id: &str, _name: &str) -> Result<()> {
+    //     todo!("Not implemented yet");
+    // }
+
+    // pub async fn get_checklists_on_card(&self, _card_id: &str) -> Result<()> {
+    //     todo!("Not implemented yet");
+    // }
+
+    // pub async fn add_item_to_checklist(
+    //     &self,
+    //     _check_list_id: &str,
+    //     _name: &str,
+    //     _pos: &str,
+    // ) -> Result<()> {
+    //     todo!("Not implemented yet");
+    // }
 
     pub async fn update_card(&self, _card_id: &str, _field: &str, _value: &str) -> Result<()> {
         todo!("Not implemented yet");
     }
 
-    pub async fn update_checklist(
-        &self,
-        _checklist_id: &str,
-        _field: &str,
-        _value: &str,
-    ) -> Result<()> {
+    pub async fn add_due_date_to_card(&self, _card_id: &str, _date_value: &str) -> Result<()> {
         todo!("Not implemented yet");
     }
+
+    // pub async fn update_checklist(
+    //     &self,
+    //     _checklist_id: &str,
+    //     _field: &str,
+    //     _value: &str,
+    // ) -> Result<()> {
+    //     todo!("Not implemented yet");
+    // }
 
     pub async fn update_card_name(&self, _card_id: &str, _name: &str) -> Result<()> {
         todo!("Not implemented yet");
@@ -153,7 +150,7 @@ impl ApiConnector {
         todo!("Not implemented yet");
     }
 
-    pub async fn delete_card(&self, _card_id: &str) -> Result<()> {
+    pub async fn update_card_title(&self, _card_id: &str, _title: &str) -> Result<()> {
         todo!("Not implemented yet");
     }
 
@@ -185,6 +182,8 @@ impl ApiConnector {
             Method::DELETE => client.delete(&request_url),
             _ => client.get(&request_url),
         };
+
+        // TODO: log the actual calls that are happening. Like an app log
         let response = request
             .query(&url_params)
             .header("Accept", "application/json")
@@ -209,6 +208,9 @@ impl ApiConnector {
                             response_status, response_text,request_url,serde_json::to_string(&url_params).unwrap()
                         );
                         println!("{}", error_msg);
+                        // TODO: do I need this?
+                        // let bt = Backtrace::new();
+                        // println!("{:?}", bt);
                         Err(anyhow!(error_msg))
                     }
                     Err(e) => panic!("ERROR: Completely failed Api call. {}", e),
@@ -225,7 +227,6 @@ mod tests {
     use anyhow::Result;
 
     // INFO:
-    // Reasoning behind testing with mock responses:
     // We want to always be sure the actual api responses still work with this application. Therefore we
     // need to validate the schemas for the responses. Based on these schemas we can then also do mocks,
     // which we use for testing other components of this application.
@@ -235,12 +236,14 @@ mod tests {
         // load boards and verify parsed result type
         let api_connector = ApiConnector::new();
         let boards = api_connector.get_boards().await?;
+
         assert_eq!(
             get_type_of(&boards),
             "alloc::vec::Vec<trustllo::trello::Board>"
         );
         assert!(!boards.first().unwrap().id.is_empty());
         assert!(!boards.first().unwrap().name.is_empty());
+
         Ok(())
     }
 
@@ -250,12 +253,14 @@ mod tests {
         let board_id = std::env::var("BOARD_ID").unwrap().to_owned();
         let api_connector = ApiConnector::new();
         let lists = api_connector.get_lists_on_board(&board_id).await?;
+
         assert_eq!(
             get_type_of(&lists),
             "alloc::vec::Vec<trustllo::trello::List>"
         );
         assert!(!lists.first().unwrap().id.is_empty());
         assert!(!lists.first().unwrap().name.is_empty());
+
         Ok(())
     }
 
@@ -265,12 +270,14 @@ mod tests {
         let list_id = std::env::var("LIST_ID").unwrap().to_owned();
         let api_connector = ApiConnector::new();
         let cards = api_connector.get_cards_on_list(&list_id).await?;
+
         assert_eq!(
             get_type_of(&cards),
             "alloc::vec::Vec<trustllo::trello::Card>"
         );
         assert!(!cards.first().unwrap().id.is_empty());
         assert!(!cards.first().unwrap().name.is_empty());
+
         Ok(())
     }
 
@@ -282,10 +289,8 @@ mod tests {
         let result_card = api_connector
             .add_card("Test card name", "test description", &list_id)
             .await?;
-        assert_eq!(
-            get_type_of(&result_card),
-            "trustllo::trello::Card"
-        );
+
+        assert_eq!(get_type_of(&result_card), "trustllo::trello::Card");
         assert!(!&result_card.id.is_empty());
         assert!(!&result_card.name.is_empty());
 
