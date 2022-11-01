@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use anyhow::{anyhow, Result};
 
 use reqwest::{Method, StatusCode};
-use serde::{Deserialize};
+use serde::Deserialize;
 
 use crate::config::config_manager::ConfigManager;
 
@@ -76,7 +76,7 @@ impl ApiConnector {
     //     todo!("Not implemented yet");
     // }
 
-    pub async fn get_cards_for_list(&self, list_id: &str) -> Result<Vec<Card>> {
+    pub async fn get_cards_on_list(&self, list_id: &str) -> Result<Vec<Card>> {
         let cards: Vec<Card> = self
             .make_request(
                 Endpoint::LISTS,
@@ -260,11 +260,11 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn get_cards_for_list_spec() -> Result<()> {
+    async fn get_cards_on_list_spec() -> Result<()> {
         // load cards on a list and verify parsed result type
         let list_id = std::env::var("LIST_ID").unwrap().to_owned();
         let api_connector = ApiConnector::new();
-        let cards = api_connector.get_cards_for_list(&list_id).await?;
+        let cards = api_connector.get_cards_on_list(&list_id).await?;
         assert_eq!(
             get_type_of(&cards),
             "alloc::vec::Vec<trustllo::trello::Card>"
@@ -276,18 +276,18 @@ mod tests {
 
     #[tokio::test]
     async fn add_card_spec() -> Result<()> {
-        // add a card to a list
+        // // add a card to a list
         let list_id = std::env::var("LIST_ID").unwrap().to_owned();
         let api_connector = ApiConnector::new();
         let result_card = api_connector
             .add_card("Test card name", "test description", &list_id)
-            .await;
+            .await?;
         assert_eq!(
             get_type_of(&result_card),
-            "alloc::vec::Vec<trustllo::trello::Card>"
+            "trustllo::trello::Card"
         );
-        // assert!(!&result_card.unwrap().id.is_empty());
-        // assert!(!&result_card.unwrap().name.is_empty());
+        assert!(!&result_card.id.is_empty());
+        assert!(!&result_card.name.is_empty());
 
         Ok(())
     }

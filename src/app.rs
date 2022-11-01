@@ -72,11 +72,19 @@ impl ApplicationService {
         // let boards = self.api_connector.get_boards().await?;
         // let lists = self
         //     .api_connector
-        //     .get_lists_on_board("5d3db4e32513418a9f7f5513").await?;
-        // // let lists = self.api_connector.get_lists_on_board("").await;
+        //     .get_lists_on_board("5d3db4e32513418a9f7f5513")
+        //     .await?;
+        // let lists = self.api_connector.get_lists_on_board("").await;
         // println!("{:?}", lists);
 
-        let result = self.api_connector.add_card("Test card name", "test description", "5d3db4e32513418a9f7f5513").await?;
+        let result = self
+            .api_connector
+            .add_card(
+                "Test card name",
+                "test description",
+                "5d4fe1ff9cd578313a585a92",
+            )
+            .await?;
         println!("{:?}", result);
         // optional: store/cache
 
