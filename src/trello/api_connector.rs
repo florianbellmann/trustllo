@@ -79,8 +79,16 @@ impl ApiConnector {
         Ok(cards)
     }
 
-    pub async fn get_card(&self, _board_id: &str, _card_id: &str) -> Result<()> {
-        todo!("Not implemented yet");
+    pub async fn get_card(&self, board_id: &str, card_id: &str) -> Result<()> {
+        let card: Card = self
+            .make_request(
+                Endpoint::BOARDS,
+                Method::GET,
+                format!("/{}/card/{}", board_id, card_id),
+                None,
+            )
+            .await?;
+        Ok(card)
     }
 
     pub async fn add_card(&self, name: &str, description: &str, list_id: &str) -> Result<Card> {
@@ -96,16 +104,14 @@ impl ApiConnector {
         Ok(card)
     }
 
-    pub async fn archive_card(&self) -> Result<()> {
-        todo!("Not implemented yet");
+    pub async fn archive_card(&self, card_id: &str) -> Result<Card> {
+        let card: Card = self.update_card(card_id, "closed", "true").await?;
+        Ok(card)
     }
 
-    pub async fn un_archive_card(&self) -> Result<()> {
-        todo!("Not implemented yet");
-    }
-
-    pub async fn delete_card(&self, _card_id: &str) -> Result<()> {
-        todo!("Not implemented yet");
+    pub async fn un_archive_card(&self, card_id: &str) -> Result<Card> {
+        let card: Card = self.update_card(card_id, "closed", "false").await?;
+        Ok(card)
     }
 
     // pub async fn add_checklist_to_card(&self, _card_id: &str, _name: &str) -> Result<()> {
@@ -125,12 +131,20 @@ impl ApiConnector {
     //     todo!("Not implemented yet");
     // }
 
-    pub async fn update_card(&self, _card_id: &str, _field: &str, _value: &str) -> Result<()> {
-        todo!("Not implemented yet");
-    }
+    pub async fn update_card(&self, card_id: &str, field: &str, value: &str) -> Result<Card> {
+        let mut params = HashMap::new();
+        params.insert("value", value);
 
-    pub async fn add_due_date_to_card(&self, _card_id: &str, _date_value: &str) -> Result<()> {
-        todo!("Not implemented yet");
+        let card: Card = self
+            .make_request(
+                Endpoint::CARDS,
+                Method::PUT,
+                format!("/{}/{}", card_id, field),
+                Some(params),
+            )
+            .await?;
+
+        Ok(card)
     }
 
     // pub async fn update_checklist(
@@ -142,16 +156,19 @@ impl ApiConnector {
     //     todo!("Not implemented yet");
     // }
 
-    pub async fn update_card_name(&self, _card_id: &str, _name: &str) -> Result<()> {
-        todo!("Not implemented yet");
+    pub async fn update_card_description(&self, card_id: &str, description: &str) -> Result<Card> {
+        let card: Card = self.update_card(card_id, "desc", description).await?;
+        Ok(card)
     }
 
-    pub async fn update_card_description(&self, _card_id: &str, _description: &str) -> Result<()> {
-        todo!("Not implemented yet");
+    pub async fn update_card_title(&self, card_id: &str, title: &str) -> Result<Card> {
+        let card: Card = self.update_card(card_id, "name", title).await?;
+        Ok(card)
     }
 
-    pub async fn update_card_title(&self, _card_id: &str, _title: &str) -> Result<()> {
-        todo!("Not implemented yet");
+    pub async fn update_card_due_date(&self, card_id: &str, date_value: &str) -> Result<Card> {
+        let card: Card = self.update_card(card_id, "due", date_value).await?;
+        Ok(card)
     }
 
     // ----------------------------------------------------------------------------------------------------------------
@@ -248,6 +265,21 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn get_card_spec() -> Result<()> {
+        // get a specific card on a board
+        let api_connector = ApiConnector::new();
+        let board_id = std::env::var("BOARD_ID").unwrap().to_owned();
+        let card_id = std::env::var("CARD_ID").unwrap().to_owned();
+        let card = api_connector.get_card(&board_id, &card_id).await?;
+
+        assert_eq!(get_type_of(&card), "trustllo::trello::Card");
+        assert!(!card.first().unwrap().id.is_empty());
+        assert!(!card.first().unwrap().name.is_empty());
+
+        Ok(())
+    }
+
+    #[tokio::test]
     async fn get_lists_on_board_spec() -> Result<()> {
         // load lists on a board and verify parsed result type
         let board_id = std::env::var("BOARD_ID").unwrap().to_owned();
@@ -295,5 +327,81 @@ mod tests {
         assert!(!&result_card.name.is_empty());
 
         Ok(())
+    }
+
+    #[tokio::test]
+    async fn archive_card_spec() -> Result<()> {
+        // archive a card
+        
+        test prep missing
+
+        let list_id = std::env::var("CARD_ID").unwrap().to_owned();
+        let api_connector = ApiConnector::new();
+        let result_card = api_connector
+.archive_card(card_id)
+            .await?;
+
+        assert_eq!(get_type_of(&result_card), "trustllo::trello::Card");
+        assert!(!&result_card.closed()); eq true
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn add_card_spec() -> Result<()> {
+        // unarchive a card
+        //
+        test prep missing
+
+        let list_id = std::env::var("CARD_ID").unwrap().to_owned();
+        let api_connector = ApiConnector::new();
+        let result_card = api_connector
+.un_archive_card(card_id)
+            .await?;
+
+        assert_eq!(get_type_of(&result_card), "trustllo::trello::Card");
+        assert!(!&result_card.closed()); eq false
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn update_card_spec() -> Result<()> {
+        // update several card fields
+        
+        prep missing and multi field tests missing
+
+        let list_id = std::env::var("CARD_ID").unwrap().to_owned();
+        let api_connector = ApiConnector::new();
+        let result_card = api_connector
+            .update_card(card_id, "fieldname", "test val")
+            .await?;
+
+        assert_eq!(get_type_of(&result_card), "trustllo::trello::Card");
+        assert!(!&result_card.id.is_empty());
+        assert!(!&result_card.name.is_empty());
+        assert!(!&result_card.fieldname is value
+
+add more sub tests
+
+        Ok(())
+    }
+
+
+    #[tokio::test]
+    async fn update_card_description_spec() -> Result<()> {
+        todo!("IMPL missing")
+    }
+
+    #[tokio::test]
+    async fn update_card_due_date_spec() -> Result<()> {
+        todo!("IMPL missing")
+
+    }
+
+    #[tokio::test]
+    async fn update_card_title_spec() -> Result<()> {
+
+        todo!("IMPL missing")
     }
 }
