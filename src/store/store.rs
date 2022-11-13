@@ -1,10 +1,18 @@
 // TODO: does this need to be in a separate folder? can it be just store.ts on top level?
 
+use std::error::Error;
+use std::fs::{self, File};
+use std::io::Read;
+use std::path::Path;
+
 use anyhow::{anyhow, Result};
 
 use serde::Deserialize;
 
-use crate::trello::{Board, Card, List};
+use crate::{
+    store::StoreData,
+    trello::{Board, Card, List},
+};
 
 // TODO: unclear if I want to store data next to config?
 // use crate::config::config_manager::ConfigManager;
@@ -19,6 +27,8 @@ pub struct Store {
 }
 
 impl Store {
+    const DATA_PATH: &str = "data.json";
+
     // TODO: Make sure this is used as a singleton!
     pub fn new() -> Store {
         Store {
@@ -80,19 +90,47 @@ impl Store {
 
     // file system
     // ----------------------------------------------------------------------------------------------------------------
-    async fn read_data_from_file(&self) -> Result<()> {
-        todo!("load from file system or open new file");
+    async fn read_data_from_file(&self, custom_path: Option<&str>) -> Result<StoreData> {
+        let data_path = custom_path.unwrap_or(Store::DATA_PATH);
+        let mut file = File::open(data_path).unwrap();
+        let mut file_contents = String::new();
+        file.read_to_string(&mut file_contents)?;
+        let store_data: StoreData = serde_json::from_str(&file_contents)?;
+        Ok(store_data)
     }
-    async fn write_data_to_file(&self) -> Result<()> {
-        // only full file? or also subdata allowed? should be the generic function used by all
-        // other ones
-        todo!("write data to preexistsing file or create a new one");
+
+    async fn create_empty_store(&self, custom_path: Option<&str>) -> Result<()> {
+        let data_path = custom_path.unwrap_or(Store::DATA_PATH);
+        let empty_store_data: StoreData = StoreData {
+            updated: "missing date".to_string(), //TODO: not implemented yet
+            boards: vec![],
+            lists: vec![],
+        };
+        let empty_store_data_string = serde_json::to_string(&empty_store_data).unwrap();
+
+        println!(
+            "StoreData with contents {} created.",
+            &empty_store_data_string
+        );
+        Ok(fs::write(data_path, empty_store_data_string)?)
+    }
+
+    async fn write_data_to_file(
+        &self,
+        new_store_data: StoreData,
+        custom_path: Option<&str>,
+    ) -> Result<()> {
+        let data_path = custom_path.unwrap_or(Store::DATA_PATH);
+        let new_store_data_string = serde_json::to_string(&new_store_data).unwrap();
+        Ok(fs::write(data_path, new_store_data_string)?)
     }
 }
 
 #[cfg(test)]
 mod tests {
     use anyhow::Result;
+
+    use crate::{store::StoreData, trello::Board, utils::fake_data::get_fake_board};
 
     #[tokio::test]
     async fn init_from_cache_spec() -> Result<()> {
@@ -153,17 +191,42 @@ mod tests {
     }
     #[tokio::test]
     async fn read_data_from_file_spec() -> Result<()> {
+        let read_data_store_path = "/tmp/trustllo_read_data_store_path.json";
         todo!("create fake data and store in file. then read the data. full file and single properties");
         Ok(())
     }
     #[tokio::test]
+    async fn create_empty_store_spec() -> Result<()> {
+        let empty_data_store_path = "/tmp/trustllo_empty_data_store_path.json";
+        todo!("create empty store. check values");
+        Ok(())
+    }
+    #[tokio::test]
     async fn write_data_to_file_spec() -> Result<()> {
+        let write_data_store_path = "/tmp/trustllo_write_data_store_path.json";
         todo!("create fake data. write it to file. check if it's there. one time for non-existing file and one time for existing. also check for full file and single sub properties. also last updated");
+        todo!("check different scenarios of subdata");
         Ok(())
     }
 
     fn create_fake_date() {
-        todo!("Setup fake data base in file")
-        // https://github.com/cksac/fake-rs
+        let boards = vec![Board {
+            name: todo!(),
+            desc: todo!(),
+            closed: todo!(),
+            id: todo!(),
+            url: todo!(),
+            subscribed: todo!(),
+        },Board{ name: todo!(), desc: todo!(), closed: todo!(), id: todo!(), url: todo!(), subscribed: todo!() }];
+
+
+        let a =get_fake_board();
+        // let listsNB
+
+        StoreData {
+            updated: "missing date", //TODO: not implemented yet
+            boards,
+            lists: todo!(),
+        }
     }
 }
