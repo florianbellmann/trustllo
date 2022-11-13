@@ -10,25 +10,30 @@ use crate::trello::{Board, Card, List};
 // use crate::config::config_manager::ConfigManager;
 
 pub struct Store {
-    pub current_board: Board,
-    pub current_lists: Vec<List>,
-    pub current_list: List,
-    pub current_cards: Vec<Card>,
-    pub current_card: Card,
-    pub last_card: Card,
+    pub current_board: Option<Board>,
+    pub current_lists: Option<Vec<List>>,
+    pub current_list: Option<List>,
+    pub current_cards: Option<Vec<Card>>,
+    pub current_card: Option<Card>,
+    pub last_card: Option<Card>,
 }
 
 impl Store {
     // TODO: Make sure this is used as a singleton!
     pub fn new() -> Store {
         Store {
-            current_board: todo!(),
-            current_lists: todo!(),
-            current_list: todo!(),
-            current_cards: todo!(),
-            current_card: todo!(),
-            last_card: todo!(),
+            // TODO: missing is the multiple board support
+            current_board: None,
+            current_lists: None,
+            current_list: None,
+            current_cards: None,
+            current_card: None,
+            last_card: None,
         }
+    }
+
+    pub async fn init_from_cache(&self) -> Result<()> {
+        todo!("read data from files and init board + lists. panic if fails");
     }
 
     pub async fn nuke_all(&self) -> Result<()> {
@@ -37,51 +42,38 @@ impl Store {
 
     // boards
     // ----------------------------------------------------------------------------------------------------------------
-    pub async fn store_board(&self) -> Result<()> {
-        todo!("store board to file");
-        todo!("update both file and memory");
-    }
-
-    pub async fn store_boards(&self) -> Result<()> {
+    pub fn set_boards(&self, board: Vec<Board>) -> Result<()> {
         todo!("store boards to file, meaning replace for vec");
         todo!("update both file and memory");
     }
-
-    pub async fn update_board(&self) -> Result<()> {
-        todo!("update board in file");
+    pub fn set_current_board(&self, boards: &Board) -> Result<()> {
+        todo!("store board to file");
         todo!("update both file and memory");
     }
 
     // lists
     // ----------------------------------------------------------------------------------------------------------------
-    pub async fn store_list(&self) -> Result<()> {
-        todo!("store list to file");
-        todo!("update both file and memory");
-    }
-
-    pub async fn store_lists(&self) -> Result<()> {
+    pub async fn set_current_lists(&self, lists: &Vec<List>) -> Result<()> {
         todo!("store lists to file, meaning replace for vec");
         todo!("update both file and memory");
     }
 
-    pub async fn update_list(&self) -> Result<()> {
+    pub async fn set_current_list(&self, list: &List) -> Result<()> {
         todo!("update list in file");
         todo!("update both file and memory");
     }
 
     // cards
     // ----------------------------------------------------------------------------------------------------------------
-    pub async fn store_card(&self) -> Result<()> {
-        todo!("store card in memory");
-        todo!("update memory");
-    }
-
-    pub async fn store_cards(&self) -> Result<()> {
+    pub async fn set_current_cards(&self, cards: &Vec<Card>) -> Result<()> {
         todo!("store cards in memory, meaning replace for vec");
         todo!("update memory");
     }
-
-    pub async fn update_card(&self) -> Result<()> {
+    pub async fn set_current_card(&self, card: &Card) -> Result<()> {
+        todo!("store card in memory");
+        todo!("update memory");
+    }
+    pub async fn set_last_card(&self, card: &Card) -> Result<()> {
         todo!("update card in memory");
         todo!("update memory");
     }
@@ -102,6 +94,12 @@ impl Store {
 mod tests {
     use anyhow::Result;
 
+    #[tokio::test]
+    async fn init_from_cache_spec() -> Result<()> {
+        todo!("init from cache and panic if impossible");
+
+        Ok(())
+    }
     #[tokio::test]
     async fn nuke_all_spec() -> Result<()> {
         todo!("create fake data. init store, check some data from the file, nuke, make sure it's not there anymore");

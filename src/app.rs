@@ -43,17 +43,22 @@ use anyhow::Result;
 //
 
 use crate::{
-    config::config_manager::ConfigManager, trello::api_connector::ApiConnector, ui::cli::Cli,
+    config::config_manager::ConfigManager,
+    store::store::Store,
+    trello::{api_connector::ApiConnector, List},
+    ui::cli::Cli,
 };
 
 pub struct ApplicationService {
     api_connector: ApiConnector,
+    store: Store,
 }
 
 impl ApplicationService {
     pub fn new() -> ApplicationService {
         ApplicationService {
             api_connector: ApiConnector::new(),
+            store: Store::new(),
         }
     }
 
@@ -67,26 +72,26 @@ impl ApplicationService {
             ConfigManager::create_config(key, token, member_id, None);
         }
 
-        //TODO: load data async to get better startup
-        self.api_connector.init().await;
-        // let boards = self.api_connector.get_boards().await?;
-        // let lists = self
-        //     .api_connector
-        //     .get_lists_on_board("5d3db4e32513418a9f7f5513")
-        //     .await?;
-        // let lists = self.api_connector.get_lists_on_board("").await;
-        // println!("{:?}", lists);
+        // TODO: Do I really want init functions everywhere or do I use the new function because I instantiate everything anyway?
+        // for now yes, because I need to split new store from init
+        match self.store.init_from_cache().await {
+            Ok(x) => {}
+            Err(e) => self.refresh_boards_and_lists().await?,
+        }
+        // let list: &List = &self.store.current_list.unwrap();
+        //
+        //
+        //if let current_list = option {
+        //    self.store.init_from_cache().await?;
 
-        let result = self
-            .api_connector
-            .add_card(
-                "Test card name",
-                "test description",
-                "5d4fe1ff9cd578313a585a92",
-            )
-            .await?;
-        println!("{:?}", result);
-        // optional: store/cache
+        //}
+
+        //if self.store.current_board != nil
+
+        ////TODO: load data async if cache present to get better startup
+        //self.api_connector.init().await;
+
+        //load data
 
         // init terminal
         // fn main() -> Result<(), Box<dyn Error>> {
@@ -133,6 +138,18 @@ impl ApplicationService {
         // TODO: actually build the app loop
 
         // todo!()
+    }
+
+    async fn refresh_boards_and_lists(&self) -> Result<()> {
+        let boards = self.api_connector.get_boards().await?;
+        let board = boards.first().unwrap();
+
+        self.store.set_current_board(&board);
+        let lists = self.api_connector.get_lists_on_board(&board.id).await?;
+        self.store.set_current_lists(&lists);
+        let list = lists.first().unwrap();
+        self.store.set_current_list(&list);
+        Ok(())
     }
 }
 

@@ -18,10 +18,10 @@ impl Endpoint {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Board {
-    name: String,
-    desc: String,
+    pub name: String,
+    pub desc: String,
     // descData: null,
-    closed: bool,
+    pub closed: bool,
     // dateClosed: null,
     // idOrganization: String,
     // idEnterprise: null,
@@ -37,11 +37,11 @@ pub struct Board {
     // enterpriseOwned: bool,
     // idBoardSource: null,
     // idMemberCreator: String,
-    id: String,
+    pub id: String,
     // starred: bool,
-    url: String,
+    pub url: String,
     // prefs: Prefs,
-    subscribed: bool,
+    pub subscribed: bool,
     // labelNames: LabelNames,
     // dateLastView: String,
     // shortUrl: String,

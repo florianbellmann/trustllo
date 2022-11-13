@@ -1,9 +1,6 @@
 # Steps
 
 - build a logger for error handling
-- implement storage
-  - could use https://github.com/dragonflydb/dragonfly for storage
-  - cache boards and lists
 - build UI
 - implement keybinding
 - time management https://lib.rs/crates/time
@@ -19,6 +16,9 @@ check all implementations for
 allocations
 and
 call by reference / borrowing
+add comments to all code parts
+tripple check panicing and error bubbling
+
 
 > bacon + clippy
 
@@ -29,3 +29,4 @@ i know I could ve used some more libraries, but I wanted to learn rust!
 # Questions
 
 What is the builder pattern that bottom uses for app.rs?
+
