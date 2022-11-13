@@ -68,7 +68,6 @@ impl ApplicationService {
         // TODO add functionality for custom config
         if !ConfigManager::config_exists(None) {
             let (key, token, member_id) = Cli::read_config();
-
             ConfigManager::create_config(key, token, member_id, None);
         }
 
@@ -78,7 +77,21 @@ impl ApplicationService {
             Ok(x) => {}
             Err(e) => self.refresh_boards_and_lists().await?,
         }
-        // let list: &List = &self.store.current_list.unwrap();
+
+// maybe better:
+//         if let list: &List = {
+//         self.store.init_from_cache().await ?;
+// &self.store.current_list.unwrap();
+//         }
+//         else{
+//             self.refresh_boards_and_lists().await?
+// &self.store.current_list.unwrap();
+//         }
+
+
+
+
+
         //
         //
         //if let current_list = option {
