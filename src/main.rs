@@ -2,6 +2,7 @@ use app::ApplicationService;
 
 mod app;
 mod config;
+mod store;
 mod trello;
 mod ui;
 mod utils;
