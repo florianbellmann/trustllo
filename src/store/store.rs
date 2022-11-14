@@ -74,19 +74,22 @@ impl Store {
         todo!("update both file and memory");
     }
     pub fn set_current_board(&mut self, boards: &Board) -> Result<()> {
-        self.current_board = Some(board.clone());
+        // self.current_board = Some(board.clone());
+        todo!("update memory");
     }
 
     // lists
     // ----------------------------------------------------------------------------------------------------------------
     pub async fn set_current_lists(&self, lists: &Vec<List>) -> Result<()> {
-        self.current_lists = Some(list.clone());
+        // self.current_lists = Some(list.clone());
         todo!("update both file and memory");
+        Ok(())
     }
 
     pub async fn set_current_list(&mut self, index: u8) {
-        Does this all have to be optional? Why not use empty lists for initializing!? Then also remove separate StoreData type
-        self.current_list = Some(self.current_lists)[index];
+        // Does this all have to be optional? Why not use empty lists for initializing!? Then also remove separate StoreData type
+        // self.current_list = Some(self.current_lists)[index];
+        todo!("update memory");
     }
 
     // cards
