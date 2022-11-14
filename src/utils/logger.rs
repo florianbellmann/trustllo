@@ -25,7 +25,7 @@ impl Logger {
         let logfile = FileAppender::builder()
             // Pattern: https://docs.rs/log4rs/*/log4rs/encode/pattern/index.html
             .encoder(Box::new(PatternEncoder::new(
-                "{d(%+)(utc)} [{f}:{L}] {h({l})} {M}:{m}{n}",
+                "{d(%+)(utc)} [{f}:{L}] {h({l})}: {m}{n}",
             )))
             .build(file_path)
             .unwrap();
@@ -43,7 +43,7 @@ impl Logger {
                 Root::builder()
                     .appender("logfile")
                     .appender("stderr")
-                    .build(LevelFilter::Trace),
+                    .build(LevelFilter::Debug),
             )
             .unwrap();
 
