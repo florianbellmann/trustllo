@@ -42,12 +42,29 @@ impl Store {
         }
     }
 
-    pub async fn init_from_cache(&self) -> Result<()> {
-        todo!("read data from files and init board + lists. panic if fails");
+    pub async fn init_from_cache(&mut self, custom_path: Option<&str>) -> Result<()> {
+        let data_path = custom_path.unwrap_or(Store::DATA_PATH);
+        let store_data = self.read_data_from_file(Some(data_path))?;
+
+        self.current_board = store_data.boards.first().cloned();
+        self.current_lists = Some(store_data.lists.clone());
+        self.current_list = store_data.lists.first().cloned();
+
+        Ok(())
     }
 
-    pub async fn nuke_all(&self) -> Result<()> {
-        todo!("delete database file, flush memory");
+    pub async fn nuke_all(&mut self, custom_path: Option<&str>) -> Result<()> {
+        let data_path = custom_path.unwrap_or(Store::DATA_PATH);
+        self.remove_data_file(custom_path).await?;
+
+        self.current_board = None;
+        self.current_lists = None;
+        self.current_list = None;
+        self.current_cards = None;
+        self.current_card = None;
+        self.last_card = None;
+
+        Ok(())
     }
 
     // boards
@@ -56,41 +73,37 @@ impl Store {
         todo!("store boards to file, meaning replace for vec");
         todo!("update both file and memory");
     }
-    pub fn set_current_board(&self, boards: &Board) -> Result<()> {
-        todo!("store board to file");
-        todo!("update both file and memory");
+    pub fn set_current_board(&mut self, boards: &Board) -> Result<()> {
+        self.current_board = Some(board.clone());
     }
 
     // lists
     // ----------------------------------------------------------------------------------------------------------------
     pub async fn set_current_lists(&self, lists: &Vec<List>) -> Result<()> {
-        todo!("store lists to file, meaning replace for vec");
+        self.current_lists = Some(list.clone());
         todo!("update both file and memory");
     }
 
-    pub async fn set_current_list(&self, list: &List) -> Result<()> {
-        todo!("update list in file");
-        todo!("update both file and memory");
+    pub async fn set_current_list(&mut self, index: u8) {
+        Does this all have to be optional? Why not use empty lists for initializing!? Then also remove separate StoreData type
+        self.current_list = Some(self.current_lists)[index];
     }
 
     // cards
     // ----------------------------------------------------------------------------------------------------------------
-    pub async fn set_current_cards(&self, cards: &Vec<Card>) -> Result<()> {
-        todo!("store cards in memory, meaning replace for vec");
-        todo!("update memory");
+    pub async fn set_current_cards(&mut self, cards: &Vec<Card>) {
+        self.current_cards = Some(cards.clone());
     }
-    pub async fn set_current_card(&self, card: &Card) -> Result<()> {
-        todo!("store card in memory");
-        todo!("update memory");
+    pub fn set_current_card(&mut self, card: &Card) {
+        self.current_card = Some(card.clone());
     }
-    pub async fn set_last_card(&self, card: &Card) -> Result<()> {
-        todo!("update card in memory");
-        todo!("update memory");
+    pub async fn set_last_card(&mut self, card: &Card) {
+        self.last_card = Some(card.clone());
     }
 
     // file system
     // ----------------------------------------------------------------------------------------------------------------
-    async fn read_data_from_file(&self, custom_path: Option<&str>) -> Result<StoreData> {
+    fn read_data_from_file(&self, custom_path: Option<&str>) -> Result<StoreData> {
         let data_path = custom_path.unwrap_or(Store::DATA_PATH);
         let mut file = File::open(data_path).unwrap();
         let mut file_contents = String::new();
@@ -124,13 +137,19 @@ impl Store {
         let new_store_data_string = serde_json::to_string(&new_store_data).unwrap();
         Ok(fs::write(data_path, new_store_data_string)?)
     }
+
+    async fn remove_data_file(&self, custom_path: Option<&str>) -> Result<()> {
+        let data_path = custom_path.unwrap_or(Store::DATA_PATH);
+        fs::remove_file(data_path);
+        Ok(())
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use anyhow::Result;
 
-    use crate::{store::StoreData, trello::Board, utils::fake_data::get_fake_board};
+    use crate::{store::StoreData, trello::Board, utils::fake_data::FakeData};
 
     #[tokio::test]
     async fn init_from_cache_spec() -> Result<()> {
@@ -207,26 +226,5 @@ mod tests {
         todo!("create fake data. write it to file. check if it's there. one time for non-existing file and one time for existing. also check for full file and single sub properties. also last updated");
         todo!("check different scenarios of subdata");
         Ok(())
-    }
-
-    fn create_fake_date() {
-        let boards = vec![Board {
-            name: todo!(),
-            desc: todo!(),
-            closed: todo!(),
-            id: todo!(),
-            url: todo!(),
-            subscribed: todo!(),
-        },Board{ name: todo!(), desc: todo!(), closed: todo!(), id: todo!(), url: todo!(), subscribed: todo!() }];
-
-
-        let a =get_fake_board();
-        // let listsNB
-
-        StoreData {
-            updated: "missing date", //TODO: not implemented yet
-            boards,
-            lists: todo!(),
-        }
     }
 }
