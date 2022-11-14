@@ -2,6 +2,7 @@
 
 - build a logger for error handling
 - build UI
+- finish store
 - implement keybinding
 - time management https://lib.rs/crates/time
 - update ui on ticks
