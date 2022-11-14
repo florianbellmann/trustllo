@@ -232,6 +232,7 @@ impl ApiConnector {
     }
 }
 
+// TODO: still a lot of the fields from the trello objects missing in the assertions
 #[cfg(test)]
 mod tests {
     use crate::trello::api_connector::ApiConnector;

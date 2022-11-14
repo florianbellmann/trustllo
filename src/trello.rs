@@ -1,5 +1,3 @@
-
-
 use serde::{Deserialize, Serialize};
 
 pub mod api_connector;
@@ -16,7 +14,8 @@ impl Endpoint {
     pub const CHECKLISTS: &str = "/checklists";
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+// TODO: still a lot of the fields missing
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Board {
     pub name: String,
     pub desc: String,
@@ -50,7 +49,7 @@ pub struct Board {
     // memberships: Membership[],
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct List {
     pub id: String,
     pub name: String,
@@ -61,41 +60,41 @@ pub struct List {
     pub subscribed: bool,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Card {
-    id: String,
+    pub id: String,
     // checkItemStates: null,
-    closed: bool,
+    pub closed: bool,
     // dateLastActivity: String,
-    desc: String,
+    pub desc: String,
     // descData: null,
     // dueReminder: null,
-    idBoard: String,
-    idList: String,
+    pub idBoard: String,
+    pub idList: String,
     // idMembersVoted: any[],
     // idShort: number,
     // idAttachmentCover: null,
     // idLabels: any[],
-    manualCoverAttachment: bool,
-    name: String,
+    pub manualCoverAttachment: bool,
+    pub name: String,
     // pos: number,
-    shortLink: String,
+    pub shortLink: String,
     // isTemplate: bool,
     // cardRole: null,
     // badges: Badges,
-    dueComplete: bool,
+    pub dueComplete: bool,
     // due?: any,
     // idChecklists: any[],
     // idMembers: any[],
     // labels: any[],
-    shortUrl: String,
+    pub shortUrl: String,
     // start: null,
-    subscribed: bool,
-    url: String,
+    pub subscribed: bool,
+    pub url: String,
     // cover: Cover,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Label {}
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Checklist {}

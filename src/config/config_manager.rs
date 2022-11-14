@@ -153,7 +153,7 @@ mod tests {
     }
 
     #[test]
-    fn delete_config_spec() {
+    fn remove_config_spec() {
         // removes config file completely
         let remove_config_name = "/tmp/trustllo_config_to_remove.json";
         fs::write(

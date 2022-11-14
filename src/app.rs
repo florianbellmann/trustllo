@@ -73,7 +73,7 @@ impl ApplicationService {
 
         // TODO: Do I really want init functions everywhere or do I use the new function because I instantiate everything anyway?
         // for now yes, because I need to split new store from init
-        match self.store.init_from_cache().await {
+        match self.store.init_from_cache(None).await {
             Ok(x) => {}
             Err(e) => self.refresh_boards_and_lists().await?,
         }
