@@ -3,6 +3,7 @@ use std::collections::HashMap;
 
 use anyhow::{anyhow, Result};
 
+use log::{info, error};
 use reqwest::{Method, StatusCode};
 use serde::Deserialize;
 
@@ -40,6 +41,7 @@ impl ApiConnector {
     pub async fn get_boards(&self) -> Result<Vec<Board>> {
         let config = ConfigManager::read_config(None).unwrap(); //TODO: this is also still hardcoded
 
+        info!("Getting boards from API.");
         let boards: Vec<Board> = self
             .make_request(
                 Endpoint::MEMBERS,
@@ -54,6 +56,7 @@ impl ApiConnector {
     // lists
     // ----------------------------------------------------------------------------------------------------------------
     pub async fn get_lists_on_board(&self, board_id: &str) -> Result<Vec<List>> {
+        info!("Getting lists on board {} from API.", board_id);
         let lists: Vec<List> = self
             .make_request(
                 Endpoint::BOARDS,
@@ -68,6 +71,7 @@ impl ApiConnector {
     // cards
     // ----------------------------------------------------------------------------------------------------------------
     pub async fn get_cards_on_list(&self, list_id: &str) -> Result<Vec<Card>> {
+        info!("Getting cards on list {} from API.", list_id);
         let cards: Vec<Card> = self
             .make_request(
                 Endpoint::LISTS,
@@ -80,6 +84,7 @@ impl ApiConnector {
     }
 
     pub async fn get_card(&self, card_id: &str) -> Result<Card> {
+        info!("Getting card {} from API.", card_id);
         let card: Card = self
             .make_request(Endpoint::CARDS, Method::GET, format!("/{}", card_id), None)
             .await?;
@@ -92,6 +97,7 @@ impl ApiConnector {
         params.insert("name", name);
         params.insert("desc", description);
 
+        info!("Adding card {} to list {}.", name, list_id);
         let card: Card = self
             .make_request(Endpoint::CARDS, Method::POST, "".to_string(), Some(params))
             .await?;
@@ -100,11 +106,13 @@ impl ApiConnector {
     }
 
     pub async fn archive_card(&self, card_id: &str) -> Result<Card> {
+        info!("Archiving card {}.", card_id);
         let card: Card = self.update_card(card_id, "closed", "true").await?;
         Ok(card)
     }
 
     pub async fn unarchive_card(&self, card_id: &str) -> Result<Card> {
+        info!("Unarchiving card {}.", card_id);
         let card: Card = self.update_card(card_id, "closed", "false").await?;
         Ok(card)
     }
@@ -130,6 +138,7 @@ impl ApiConnector {
         let mut params = HashMap::new();
         params.insert("value", value);
 
+        info!("Updating card {} on field {}.", card_id, field);
         let card: Card = self
             .make_request(
                 Endpoint::CARDS,
@@ -152,16 +161,19 @@ impl ApiConnector {
     // }
 
     pub async fn update_card_description(&self, card_id: &str, description: &str) -> Result<Card> {
+        info!("Updating description for card {}.", card_id);
         let card: Card = self.update_card(card_id, "desc", description).await?;
         Ok(card)
     }
 
     pub async fn update_card_title(&self, card_id: &str, title: &str) -> Result<Card> {
+        info!("Updating title for card {}.", card_id);
         let card: Card = self.update_card(card_id, "name", title).await?;
         Ok(card)
     }
 
     pub async fn update_card_due_date(&self, card_id: &str, date_value: &str) -> Result<Card> {
+        info!("Updating due date for card {}.", card_id);
         let card: Card = self.update_card(card_id, "due", date_value).await?;
         Ok(card)
     }
@@ -207,7 +219,7 @@ impl ApiConnector {
                 Ok(response_data) => Ok(response_data),
                 Err(e) => {
                     let error_msg = format!("ERROR: Failed to parse the Api response. {}", e);
-                    println!("{}", error_msg);
+                    error!("{}", error_msg);
                     Err(anyhow!(error_msg))
                 }
             },
@@ -219,7 +231,7 @@ impl ApiConnector {
                             "ERROR calling the Api. \n  Status code '{}' was received. \n  Message: '{}'\n  Url: '{}'\n  Params: '{:#}'",
                             response_status, response_text,request_url,serde_json::to_string(&url_params).unwrap()
                         );
-                        println!("{}", error_msg);
+                        error!("{}", error_msg);
                         // TODO: do I need this?
                         // let bt = Backtrace::new();
                         // println!("{:?}", bt);

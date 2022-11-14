@@ -1,5 +1,4 @@
 use app::ApplicationService;
-use log::{error, info};
 
 use crate::utils::logger::Logger;
 
@@ -14,8 +13,6 @@ mod utils;
 async fn main() {
     Logger::init();
 
-    info!("booting up");
-    error!("booting up");
     let application_service = ApplicationService::new();
 
     application_service.init().await;

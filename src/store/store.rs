@@ -1,13 +1,10 @@
 // TODO: does this need to be in a separate folder? can it be just store.ts on top level?
 
-
 use std::fs::{self, File};
 use std::io::Read;
 
-
-use anyhow::{Result};
-
-
+use anyhow::Result;
+use log::info;
 
 use crate::{
     store::StoreData,
@@ -50,6 +47,7 @@ impl Store {
         self.current_lists = Some(store_data.lists.clone());
         self.current_list = store_data.lists.first().cloned();
 
+        info!("Initialized store from cache.");
         Ok(())
     }
 
@@ -64,6 +62,7 @@ impl Store {
         self.current_card = None;
         self.last_card = None;
 
+        info!("Nuked full store.");
         Ok(())
     }
 
@@ -111,6 +110,7 @@ impl Store {
         let mut file = File::open(data_path).unwrap();
         let mut file_contents = String::new();
         file.read_to_string(&mut file_contents)?;
+
         let store_data: StoreData = serde_json::from_str(&file_contents)?;
         Ok(store_data)
     }
@@ -124,8 +124,8 @@ impl Store {
         };
         let empty_store_data_string = serde_json::to_string(&empty_store_data).unwrap();
 
-        println!(
-            "StoreData with contents {} created.",
+        info!(
+            "New StoreData with contents {} created.",
             &empty_store_data_string
         );
         Ok(fs::write(data_path, empty_store_data_string)?)
@@ -138,11 +138,13 @@ impl Store {
     ) -> Result<()> {
         let data_path = custom_path.unwrap_or(Store::DATA_PATH);
         let new_store_data_string = serde_json::to_string(&new_store_data).unwrap();
+        info!("Updating store file.");
         Ok(fs::write(data_path, new_store_data_string)?)
     }
 
     async fn remove_data_file(&self, custom_path: Option<&str>) -> Result<()> {
         let data_path = custom_path.unwrap_or(Store::DATA_PATH);
+        info!("Removing store file.");
         fs::remove_file(data_path);
         Ok(())
     }
@@ -151,8 +153,6 @@ impl Store {
 #[cfg(test)]
 mod tests {
     use anyhow::Result;
-
-    
 
     #[tokio::test]
     async fn init_from_cache_spec() -> Result<()> {

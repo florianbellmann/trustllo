@@ -1,4 +1,5 @@
 use anyhow::Result;
+use log::{error, info, debug};
 // use crossterm::{
 //     event::{DisableMouseCapture, EnableMouseCapture},
 //     execute,
@@ -61,7 +62,7 @@ impl ApplicationService {
     }
 
     pub async fn init(&self) -> Result<()> {
-        println!("Initializing the app...");
+        debug!("Initializing app.");
 
         // TODO add functionality for custom config
         if !ConfigManager::config_exists(None) {
@@ -138,10 +139,11 @@ impl ApplicationService {
     }
 
     pub fn teardown(&self) {
-        println!("Tearing down the app...");
+        debug!("Tearing down app.");
     }
 
     pub fn run_app_loop(&self) {
+        debug!("Starting app loop.");
         // TODO: actually build the app loop
 
         // todo!()

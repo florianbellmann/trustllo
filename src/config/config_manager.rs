@@ -3,6 +3,8 @@ use std::fs::{self, File};
 use std::io::Read;
 use std::path::Path;
 
+use log::{info, error};
+
 use super::Config;
 pub struct ConfigManager {}
 
@@ -46,7 +48,7 @@ impl ConfigManager {
         let file_exists = Path::new(config_path).is_file();
 
         if file_exists {
-            println!("Config file already exists");
+            error!("Config file already exists");
         } else {
             let config: Config = Config {
                 api_key,
@@ -55,7 +57,7 @@ impl ConfigManager {
             };
             let config_string = serde_json::to_string(&config).unwrap();
 
-            println!("Config with contents {} created.", &config_string);
+            info!("Config with contents {} created.", &config_string);
             fs::write(config_path, config_string);
         }
     }
