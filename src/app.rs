@@ -45,7 +45,7 @@ use anyhow::Result;
 use crate::{
     config::config_manager::ConfigManager,
     store::store::Store,
-    trello::{api_connector::ApiConnector, List},
+    trello::{api_connector::ApiConnector},
     ui::cli::Cli,
 };
 
@@ -155,7 +155,7 @@ impl ApplicationService {
 
     async fn refresh_boards_and_lists(&self) -> Result<()> {
         let boards = self.api_connector.get_boards().await?;
-        let board = boards.first().unwrap();
+        let _board = boards.first().unwrap();
 
 //         self.store.set_current_board(&board);
 //         let lists = self.api_connector.get_lists_on_board(&board.id).await?;

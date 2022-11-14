@@ -1,13 +1,13 @@
 // TODO: does this need to be in a separate folder? can it be just store.ts on top level?
 
-use std::error::Error;
+
 use std::fs::{self, File};
 use std::io::Read;
-use std::path::Path;
 
-use anyhow::{anyhow, Result};
 
-use serde::Deserialize;
+use anyhow::{Result};
+
+
 
 use crate::{
     store::StoreData,
@@ -54,7 +54,7 @@ impl Store {
     }
 
     pub async fn nuke_all(&mut self, custom_path: Option<&str>) -> Result<()> {
-        let data_path = custom_path.unwrap_or(Store::DATA_PATH);
+        let _data_path = custom_path.unwrap_or(Store::DATA_PATH);
         self.remove_data_file(custom_path).await?;
 
         self.current_board = None;
@@ -69,24 +69,24 @@ impl Store {
 
     // boards
     // ----------------------------------------------------------------------------------------------------------------
-    pub fn set_boards(&self, board: Vec<Board>) -> Result<()> {
+    pub fn set_boards(&self, _board: Vec<Board>) -> Result<()> {
         todo!("store boards to file, meaning replace for vec");
         todo!("update both file and memory");
     }
-    pub fn set_current_board(&mut self, boards: &Board) -> Result<()> {
+    pub fn set_current_board(&mut self, _boards: &Board) -> Result<()> {
         // self.current_board = Some(board.clone());
         todo!("update memory");
     }
 
     // lists
     // ----------------------------------------------------------------------------------------------------------------
-    pub async fn set_current_lists(&self, lists: &Vec<List>) -> Result<()> {
+    pub async fn set_current_lists(&self, _lists: &Vec<List>) -> Result<()> {
         // self.current_lists = Some(list.clone());
         todo!("update both file and memory");
         Ok(())
     }
 
-    pub async fn set_current_list(&mut self, index: u8) {
+    pub async fn set_current_list(&mut self, _index: u8) {
         // Does this all have to be optional? Why not use empty lists for initializing!? Then also remove separate StoreData type
         // self.current_list = Some(self.current_lists)[index];
         todo!("update memory");
@@ -152,7 +152,7 @@ impl Store {
 mod tests {
     use anyhow::Result;
 
-    use crate::{store::StoreData, trello::Board, utils::fake_data::FakeData};
+    
 
     #[tokio::test]
     async fn init_from_cache_spec() -> Result<()> {
@@ -213,19 +213,19 @@ mod tests {
     }
     #[tokio::test]
     async fn read_data_from_file_spec() -> Result<()> {
-        let read_data_store_path = "/tmp/trustllo_read_data_store_path.json";
+        let _read_data_store_path = "/tmp/trustllo_read_data_store_path.json";
         todo!("create fake data and store in file. then read the data. full file and single properties");
         Ok(())
     }
     #[tokio::test]
     async fn create_empty_store_spec() -> Result<()> {
-        let empty_data_store_path = "/tmp/trustllo_empty_data_store_path.json";
+        let _empty_data_store_path = "/tmp/trustllo_empty_data_store_path.json";
         todo!("create empty store. check values");
         Ok(())
     }
     #[tokio::test]
     async fn write_data_to_file_spec() -> Result<()> {
-        let write_data_store_path = "/tmp/trustllo_write_data_store_path.json";
+        let _write_data_store_path = "/tmp/trustllo_write_data_store_path.json";
         todo!("create fake data. write it to file. check if it's there. one time for non-existing file and one time for existing. also check for full file and single sub properties. also last updated");
         todo!("check different scenarios of subdata");
         Ok(())

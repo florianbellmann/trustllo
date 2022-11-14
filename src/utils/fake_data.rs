@@ -3,7 +3,7 @@ use crate::store::StoreData;
 use crate::trello::{Board, Card, List};
 use fake::faker::boolean::en::Boolean;
 use fake::faker::lorem::en::Words;
-use fake::uuid::{UUIDv1, UUIDv4};
+
 use fake::{Fake, Faker};
 
 // TODO: remove this file from the normal app module tree. only for testing

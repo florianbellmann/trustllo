@@ -1,5 +1,5 @@
-use anyhow::Result;
-use log::{error, info, warn, LevelFilter};
+
+use log::{LevelFilter};
 use log4rs::{
     self,
     append::{
