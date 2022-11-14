@@ -43,10 +43,8 @@ use anyhow::Result;
 //
 
 use crate::{
-    config::config_manager::ConfigManager,
-    store::store::Store,
-    trello::{api_connector::ApiConnector},
-    ui::cli::Cli,
+    config::config_manager::ConfigManager, store::store::Store,
+    trello::api_connector::ApiConnector, ui::cli::Cli,
 };
 
 pub struct ApplicationService {
@@ -78,19 +76,15 @@ impl ApplicationService {
         //     Err(e) => self.refresh_boards_and_lists().await?,
         // }
 
-// maybe better:
-//         if let list: &List = {
-//         self.store.init_from_cache().await ?;
-// &self.store.current_list.unwrap();
-//         }
-//         else{
-//             self.refresh_boards_and_lists().await?
-// &self.store.current_list.unwrap();
-//         }
-
-
-
-
+        // maybe better:
+        //         if let list: &List = {
+        //         self.store.init_from_cache().await ?;
+        // &self.store.current_list.unwrap();
+        //         }
+        //         else{
+        //             self.refresh_boards_and_lists().await?
+        // &self.store.current_list.unwrap();
+        //         }
 
         //
         //
@@ -157,10 +151,10 @@ impl ApplicationService {
         let boards = self.api_connector.get_boards().await?;
         let _board = boards.first().unwrap();
 
-//         self.store.set_current_board(&board);
-//         let lists = self.api_connector.get_lists_on_board(&board.id).await?;
-//         self.store.set_current_lists(&lists);
-//         let list = lists.first().unwrap();
+        //         self.store.set_current_board(&board);
+        //         let lists = self.api_connector.get_lists_on_board(&board.id).await?;
+        //         self.store.set_current_lists(&lists);
+        //         let list = lists.first().unwrap();
         // self.store.set_current_list(&list);
         Ok(())
     }

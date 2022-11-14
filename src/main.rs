@@ -1,6 +1,5 @@
-
 use app::ApplicationService;
-use log::{info, error};
+use log::{error, info};
 
 use crate::utils::logger::Logger;
 

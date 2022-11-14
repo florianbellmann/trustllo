@@ -6,5 +6,5 @@ pub mod config_manager;
 pub struct Config {
     pub api_key: String,
     pub api_token: String,
-    pub member_id:String,
+    pub member_id: String,
 }
