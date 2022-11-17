@@ -68,11 +68,11 @@ impl Store {
 
     // boards
     // ----------------------------------------------------------------------------------------------------------------
-    pub fn set_boards(&self, _board: Vec<Board>) -> Result<()> {
+    pub async fn set_boards(&self, _board: Vec<Board>) -> Result<()> {
         todo!("store boards to file, meaning replace for vec");
         todo!("update both file and memory");
     }
-    pub fn set_current_board(&mut self, _boards: &Board) -> Result<()> {
+    pub async fn set_current_board(&mut self, _boards: &Board) -> Result<()> {
         // self.current_board = Some(board.clone());
         todo!("update memory");
     }
@@ -93,13 +93,13 @@ impl Store {
 
     // cards
     // ----------------------------------------------------------------------------------------------------------------
-    pub async fn set_current_cards(&mut self, cards: &Vec<Card>) {
+    pub fn set_current_cards(&mut self, cards: &Vec<Card>) {
         self.current_cards = Some(cards.clone());
     }
     pub fn set_current_card(&mut self, card: &Card) {
         self.current_card = Some(card.clone());
     }
-    pub async fn set_last_card(&mut self, card: &Card) {
+    pub fn set_last_card(&mut self, card: &Card) {
         self.last_card = Some(card.clone());
     }
 
@@ -115,7 +115,7 @@ impl Store {
         Ok(store_data)
     }
 
-    async fn create_empty_store(&self, custom_path: Option<&str>) -> Result<()> {
+    fn create_empty_store(&self, custom_path: Option<&str>) -> Result<()> {
         let data_path = custom_path.unwrap_or(Store::DATA_PATH);
         let empty_store_data: StoreData = StoreData {
             updated: "missing date".to_string(), //TODO: not implemented yet
@@ -152,82 +152,265 @@ impl Store {
 
 #[cfg(test)]
 mod tests {
+    use std::{
+        fs::{self, File},
+        io::Read,
+        path::Path,
+    };
+
     use anyhow::Result;
+
+    use crate::{store::StoreData, trello::Card, utils::fake_data::FakeData};
+
+    use super::Store;
 
     #[tokio::test]
     async fn init_from_cache_spec() -> Result<()> {
-        todo!("init from cache and panic if impossible");
+        let mut store = Store::new();
 
+        // TODO: updated field is missing
+        assert_eq!(store.current_board.is_none(), true);
+        assert_eq!(store.current_lists.is_none(), true);
+        assert_eq!(store.current_list.is_none(), true);
+        assert_eq!(store.current_cards.is_none(), true);
+        assert_eq!(store.current_card.is_none(), true);
+        assert_eq!(store.last_card.is_none(), true);
+
+        let init_cache_data_store_path = "/tmp/trustllo_init_cache_data_store_path.json";
+        let fake_store_data = FakeData::get_fake_store_data();
+        let fake_store_data_string = serde_json::to_string(&fake_store_data).unwrap();
+        fs::write(init_cache_data_store_path, fake_store_data_string);
+
+        store.init_from_cache(Some(init_cache_data_store_path));
+
+        // TODO: multiple board support still missing
+        assert_eq!(store.current_board.is_none(), false);
+        assert_eq!(store.current_lists.is_none(), false);
+        assert_eq!(store.current_list.is_none(), false);
+        assert_eq!(
+            store.current_list.unwrap().id,
+            fake_store_data.lists.first().unwrap().id
+        );
+        assert_eq!(
+            store.current_list.unwrap().name,
+            fake_store_data.lists.first().unwrap().name
+        );
+        assert_eq!(store.current_cards.is_none(), true);
+        assert_eq!(store.current_card.is_none(), true);
+        assert_eq!(store.last_card.is_none(), true);
+
+        fs::remove_file(init_cache_data_store_path);
+        assert_eq!(false, Path::new(init_cache_data_store_path).is_file());
         Ok(())
     }
+
     #[tokio::test]
     async fn nuke_all_spec() -> Result<()> {
         todo!("create fake data. init store, check some data from the file, nuke, make sure it's not there anymore");
+        Ok(())
+    }
 
-        Ok(())
-    }
     #[tokio::test]
-    async fn store_board_spec() -> Result<()> {
-        todo!("create fake data. check board not there. create board. store it. check its there. do the same test with an empty database");
+    async fn set_boards_spec() -> Result<()> {
         Ok(())
     }
+
     #[tokio::test]
-    async fn store_boards_spec() -> Result<()> {
-        todo!("create fake data. check boards not there. create boards. store them (maybe 3). check they are there. do the same test with an empty database");
+    async fn set_current_board_spec() -> Result<()> {
         Ok(())
     }
+
     #[tokio::test]
-    async fn update_board_spec() -> Result<()> {
-        todo!("create fake data. check a board. update it. check new fields are there. make the test also with the board not there yet. meaning in this case it must insert!");
+    async fn set_current_lists_spec() -> Result<()> {
         Ok(())
     }
+
     #[tokio::test]
-    async fn store_list_spec() -> Result<()> {
-        todo!("create fake data. check list not there. create list. store it. check its there. do the same test with an empty database");
+    async fn set_current_list_spec() {
         Ok(())
     }
-    #[tokio::test]
-    async fn store_lists_spec() -> Result<()> {
-        todo!("create fake data. check lists not there. create lists. store them (maybe 3). check they are there. do the same test with an empty database");
-        Ok(())
+
+    #[test]
+    fn set_current_cards_spec() {
+        let store = Store::new();
+        assert!(store.current_cards.is_none());
+        assert!(store.current_card.is_none());
+
+        let card1: Card = FakeData::get_fake_card();
+        let card2: Card = FakeData::get_fake_card();
+        let card3: Card = FakeData::get_fake_card();
+        let card4: Card = FakeData::get_fake_card();
+
+        let cards = vec![card1, card2, card3, card4];
+
+        store.set_current_cards(&cards);
+
+        assert_eq!(store.current_cards.unwrap()[0].id, card1.id);
+        assert_eq!(store.current_cards.unwrap()[0].name, card1.name);
+        assert_eq!(store.current_cards.unwrap()[1].id, card2.id);
+        assert_eq!(store.current_cards.unwrap()[1].name, card2.name);
+        assert_eq!(store.current_cards.unwrap()[2].id, card3.id);
+        assert_eq!(store.current_cards.unwrap()[2].name, card3.name);
+        assert_eq!(store.current_cards.unwrap()[3].id, card4.id);
+        assert_eq!(store.current_cards.unwrap()[3].name, card4.name);
+        assert_eq!(store.current_cards.unwrap().len(), 4);
+
+        let card5: Card = FakeData::get_fake_card();
+        let card6: Card = FakeData::get_fake_card();
+        let card7: Card = FakeData::get_fake_card();
+
+        let cards = vec![card5, card6, card7];
+
+        store.set_current_cards(&cards);
+
+        assert_eq!(store.current_cards.unwrap()[0].id, card5.id);
+        assert_eq!(store.current_cards.unwrap()[0].name, card5.name);
+        assert_eq!(store.current_cards.unwrap()[1].id, card6.id);
+        assert_eq!(store.current_cards.unwrap()[1].name, card6.name);
+        assert_eq!(store.current_cards.unwrap()[2].id, card7.id);
+        assert_eq!(store.current_cards.unwrap()[2].name, card7.name);
+        assert_eq!(store.current_cards.unwrap().len(), 3)
     }
-    #[tokio::test]
-    async fn update_list_spec() -> Result<()> {
-        todo!("create fake data. check a list. update it. check new fields are there. make the test also with the list not there yet. meaning in this case it must insert!");
-        Ok(())
+
+    #[test]
+    fn set_current_card_spec() {
+        let store = Store::new();
+        assert!(store.current_card.is_none());
+
+        let card: Card = FakeData::get_fake_card();
+        store.set_current_card(&card);
+
+        assert_eq!(store.current_card.unwrap().id, card.id);
+        assert_eq!(store.current_card.unwrap().name, card.name);
+
+        let card2: Card = FakeData::get_fake_card();
+        store.set_current_card(&card2);
+
+        assert_eq!(store.current_card.unwrap().id, card2.id);
+        assert_eq!(store.current_card.unwrap().name, card2.name);
     }
-    #[tokio::test]
-    async fn store_card_spec() -> Result<()> {
-        todo!("create fake data. check card not there. create card. store it. check its there. do the same test with an empty database");
-        Ok(())
+
+    #[test]
+    fn set_last_card_spec() {
+        let store = Store::new();
+        assert!(store.last_card.is_none());
+
+        let card: Card = FakeData::get_fake_card();
+        store.set_last_card(&card);
+
+        assert_eq!(store.last_card.unwrap().id, card.id);
+        assert_eq!(store.last_card.unwrap().name, card.name);
+
+        let card2: Card = FakeData::get_fake_card();
+        store.set_current_card(&card2);
+
+        assert_eq!(store.last_card.unwrap().id, card2.id);
+        assert_eq!(store.last_card.unwrap().name, card2.name);
     }
-    #[tokio::test]
-    async fn store_cards_spec() -> Result<()> {
-        todo!("create fake data. check cards not there. create cards. store them (maybe 3). check they are there. do the same test with an empty database");
-        Ok(())
-    }
-    #[tokio::test]
-    async fn update_card_spec() -> Result<()> {
-        todo!("create fake data. check a card. update it. check new fields are there. make the test also with the card not there yet. meaning in this case it must insert!");
-        Ok(())
-    }
+
     #[tokio::test]
     async fn read_data_from_file_spec() -> Result<()> {
-        let _read_data_store_path = "/tmp/trustllo_read_data_store_path.json";
+        let store = Store::new();
+
+        let read_data_store_path = "/tmp/trustllo_read_data_store_path.json";
+        let fake_store_data = FakeData::get_fake_store_data();
+        let fake_store_data_string = serde_json::to_string(&fake_store_data).unwrap();
+        fs::write(read_data_store_path, fake_store_data_string);
+        assert_eq!(true, Path::new(read_data_store_path).is_file());
+
+        let store_data: StoreData = store.read_data_from_file(Some(read_data_store_path))?;
+
+        assert_eq!(store_data.boards.len(), fake_store_data.boards.len());
+        assert_eq!(
+            store_data.boards.first().unwrap().id,
+            fake_store_data.boards.first().unwrap().id
+        );
+        assert_eq!(store_data.lists.len(), fake_store_data.lists.len());
+        assert_eq!(
+            store_data.lists.first().unwrap().id,
+            fake_store_data.lists.first().unwrap().id
+        );
+        assert_eq!(store_data.updated, fake_store_data.updated);
+
+        fs::remove_file(read_data_store_path);
+        assert_eq!(false, Path::new(read_data_store_path).is_file());
         todo!("create fake data and store in file. then read the data. full file and single properties");
         Ok(())
     }
-    #[tokio::test]
-    async fn create_empty_store_spec() -> Result<()> {
-        let _empty_data_store_path = "/tmp/trustllo_empty_data_store_path.json";
-        todo!("create empty store. check values");
+
+    #[test]
+    fn create_empty_store_spec() -> Result<()> {
+        let store = Store::new();
+
+        let empty_data_store_path = "/tmp/trustllo_empty_data_store_path.json";
+        store.create_empty_store(Some(empty_data_store_path));
+
+        assert_eq!(true, Path::new(empty_data_store_path).is_file());
+
+        let mut file = File::open(empty_data_store_path).unwrap();
+        let mut file_contents = String::new();
+        file.read_to_string(&mut file_contents)?;
+
+        let store_data: StoreData = serde_json::from_str(&file_contents)?;
+        assert_eq!(store_data.updated, "missing date");
+        assert_eq!(store_data.boards.len(), 0);
+        assert_eq!(store_data.lists.len(), 0);
+
+        fs::remove_file(empty_data_store_path);
+        assert_eq!(false, Path::new(empty_data_store_path).is_file());
+
         Ok(())
     }
+
     #[tokio::test]
     async fn write_data_to_file_spec() -> Result<()> {
-        let _write_data_store_path = "/tmp/trustllo_write_data_store_path.json";
-        todo!("create fake data. write it to file. check if it's there. one time for non-existing file and one time for existing. also check for full file and single sub properties. also last updated");
+        let store = Store::new();
+
+        let write_data_store_path = "/tmp/trustllo_write_data_store_path.json";
+        let fake_store_data = FakeData::get_fake_store_data();
+        let fake_store_data_string = serde_json::to_string(&fake_store_data).unwrap();
+
+        assert_eq!(false, Path::new(write_data_store_path).is_file());
+
+        fs::write(write_data_store_path, fake_store_data_string);
+
+        assert_eq!(true, Path::new(write_data_store_path).is_file());
+
+        todo!("time for existing. also check for full file and single sub properties. also last updated");
         todo!("check different scenarios of subdata");
+
+        fs::remove_file(write_data_store_path);
+        assert_eq!(false, Path::new(write_data_store_path).is_file());
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn remove_data_file_spec() -> Result<()> {
+        let store = Store::new();
+
+        let remove_data_store_path = "/tmp/trustllo_remove_data_store_path.json";
+        let fake_store_data = FakeData::get_fake_store_data();
+        let fake_store_data_string = serde_json::to_string(&fake_store_data).unwrap();
+        fs::write(remove_data_store_path, fake_store_data_string);
+
+        assert_eq!(true, Path::new(remove_data_store_path).is_file());
+
+        store.remove_data_file(Some(remove_data_store_path));
+        assert_eq!(false, Path::new(remove_data_store_path).is_file());
+
+        // do it twice so we see it doesn't panic
+        store.remove_data_file(Some(remove_data_store_path));
+        assert_eq!(false, Path::new(remove_data_store_path).is_file());
+
         Ok(())
     }
 }
+
+// let new_config_name: &str = "/tmp/trustllo_new_config.json";
+
+// // check if file exists
+// assert_eq!(true, Path::new(new_config_name).is_file());
+
+// // remove the file
+// fs::remove_file(new_config_name);
+// assert_eq!(false, Path::new(new_config_name).is_file())
