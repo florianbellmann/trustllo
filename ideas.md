@@ -1,6 +1,5 @@
 # Steps
 
-- build a logger for error handling
 - build UI
 - finish store
 - implement keybinding
