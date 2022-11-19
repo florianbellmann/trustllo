@@ -69,26 +69,24 @@ impl Store {
     // boards
     // ----------------------------------------------------------------------------------------------------------------
     pub async fn set_boards(&self, _board: Vec<Board>) -> Result<()> {
-        todo!("store boards to file, meaning replace for vec");
-        todo!("update both file and memory");
+        todo!("store boards to file, meaning replace for vec. update both file and memory");
+        todo!("update date updated field in file");
     }
-    pub async fn set_current_board(&mut self, _boards: &Board) -> Result<()> {
-        // self.current_board = Some(board.clone());
-        todo!("update memory");
+    pub fn set_current_board(&mut self, board: &Board) {
+        //TODO: when multi board support, change this to index based setter
+        self.current_board = Some(board.clone());
     }
 
     // lists
     // ----------------------------------------------------------------------------------------------------------------
     pub async fn set_current_lists(&self, _lists: &Vec<List>) -> Result<()> {
-        // self.current_lists = Some(list.clone());
         todo!("update both file and memory");
+        todo!("update date updated field in file");
         Ok(())
     }
 
-    pub async fn set_current_list(&mut self, _index: u8) {
-        // Does this all have to be optional? Why not use empty lists for initializing!? Then also remove separate StoreData type
-        // self.current_list = Some(self.current_lists)[index];
-        todo!("update memory");
+    pub fn set_current_list(&mut self, index: usize) {
+        self.current_list = Some(self.current_lists.unwrap()[index]);
     }
 
     // cards
@@ -160,7 +158,11 @@ mod tests {
 
     use anyhow::Result;
 
-    use crate::{store::StoreData, trello::Card, utils::fake_data::FakeData};
+    use crate::{
+        store::StoreData,
+        trello::{Board, Card, List},
+        utils::fake_data::FakeData,
+    };
 
     use super::Store;
 
@@ -206,28 +208,152 @@ mod tests {
 
     #[tokio::test]
     async fn nuke_all_spec() -> Result<()> {
-        todo!("create fake data. init store, check some data from the file, nuke, make sure it's not there anymore");
+        let store = Store::new();
+        let nuke_store_path = "/tmp/trustllo_init_cache_data_store_path.json";
+        store.create_empty_store(Some(nuke_store_path));
+
+        assert_eq!(true, Path::new(nuke_store_path).is_file());
+        let mut file = File::open(nuke_store_path).unwrap();
+        let mut file_contents = String::new();
+        file.read_to_string(&mut file_contents)?;
+        let store_data: StoreData = serde_json::from_str(&file_contents)?;
+        assert_eq!(store_data.boards.len(), 0);
+        assert_eq!(store_data.lists.len(), 0);
+
+        store.nuke_all(Some(nuke_store_path));
+        assert_eq!(false, Path::new(nuke_store_path).is_file());
+        assert!(store.current_board.is_none());
+        assert!(store.current_lists.is_none());
+        assert!(store.current_list.is_none());
+        assert!(store.current_cards.is_none());
+        assert!(store.current_card.is_none());
+        assert!(store.last_card.is_none());
+
         Ok(())
     }
 
     #[tokio::test]
     async fn set_boards_spec() -> Result<()> {
+        //TODO: implement with multiple board support
         Ok(())
     }
 
-    #[tokio::test]
-    async fn set_current_board_spec() -> Result<()> {
-        Ok(())
+    #[test]
+    fn set_current_board_spec() {
+        let store = Store::new();
+        assert!(store.current_board.is_none());
+
+        let board1: Board = FakeData::get_fake_board();
+        store.set_current_board(&board1);
+
+        assert_eq!(store.current_board.unwrap().id, board1.id);
+        assert_eq!(store.current_board.unwrap().name, board1.name);
+
+        let board2: Board = FakeData::get_fake_board();
+        store.set_current_board(&board2);
+
+        assert_eq!(store.current_card.unwrap().id, board2.id);
+        assert_eq!(store.current_card.unwrap().name, board2.name);
     }
 
     #[tokio::test]
     async fn set_current_lists_spec() -> Result<()> {
+        let store = Store::new();
+
+        let set_current_lists_store_path = "/tmp/trustllo_empty_data_store_path.json";
+        store.create_empty_store(Some(set_current_lists_store_path));
+
+        assert_eq!(true, Path::new(set_current_lists_store_path).is_file());
+
+        let mut file = File::open(set_current_lists_store_path).unwrap();
+        let mut file_contents = String::new();
+        file.read_to_string(&mut file_contents)?;
+        let store_data: StoreData = serde_json::from_str(&file_contents)?;
+        assert_eq!(store_data.lists.len(), 0);
+
+        assert!(store.current_lists.is_none());
+        assert!(store.current_list.is_none());
+
+        let list1: List = FakeData::get_fake_list();
+        let list2: List = FakeData::get_fake_list();
+        let list3: List = FakeData::get_fake_list();
+        let list4: List = FakeData::get_fake_list();
+
+        let lists = vec![list1, list2, list3, list4];
+        store.set_current_lists(&lists);
+
+        assert_eq!(store.current_lists.unwrap()[0].id, list1.id);
+        assert_eq!(store.current_lists.unwrap()[0].name, list1.name);
+        assert_eq!(store.current_lists.unwrap()[1].id, list2.id);
+        assert_eq!(store.current_lists.unwrap()[1].name, list2.name);
+        assert_eq!(store.current_lists.unwrap()[2].id, list3.id);
+        assert_eq!(store.current_lists.unwrap()[2].name, list3.name);
+        assert_eq!(store.current_lists.unwrap()[3].id, list4.id);
+        assert_eq!(store.current_lists.unwrap()[3].name, list4.name);
+        assert_eq!(store.current_lists.unwrap().len(), 4);
+
+        let mut file = File::open(set_current_lists_store_path).unwrap();
+        let mut file_contents = String::new();
+        file.read_to_string(&mut file_contents)?;
+        let store_data: StoreData = serde_json::from_str(&file_contents)?;
+        assert_eq!(store_data.lists[0].id, list1.id);
+        assert_eq!(store_data.lists[0].name, list1.name);
+        assert_eq!(store_data.lists[1].id, list2.id);
+        assert_eq!(store_data.lists[1].name, list2.name);
+        assert_eq!(store_data.lists[2].id, list3.id);
+        assert_eq!(store_data.lists[2].name, list3.name);
+        assert_eq!(store_data.lists[3].id, list4.id);
+        assert_eq!(store_data.lists[3].name, list4.name);
+        assert_eq!(store_data.lists.len(), 4);
+
+        let list5: List = FakeData::get_fake_list();
+        let list6: List = FakeData::get_fake_list();
+        let list7: List = FakeData::get_fake_list();
+
+        let lists = vec![list5, list6, list7];
+        store.set_current_lists(&lists);
+
+        assert_eq!(store.current_lists.unwrap()[0].id, list5.id);
+        assert_eq!(store.current_lists.unwrap()[0].name, list5.name);
+        assert_eq!(store.current_lists.unwrap()[1].id, list6.id);
+        assert_eq!(store.current_lists.unwrap()[1].name, list6.name);
+        assert_eq!(store.current_lists.unwrap()[2].id, list7.id);
+        assert_eq!(store.current_lists.unwrap()[2].name, list7.name);
+        assert_eq!(store.current_lists.unwrap().len(), 3);
+
+        let mut file = File::open(set_current_lists_store_path).unwrap();
+        let mut file_contents = String::new();
+        file.read_to_string(&mut file_contents)?;
+        let store_data: StoreData = serde_json::from_str(&file_contents)?;
+        assert_eq!(store_data.lists[0].id, list1.id);
+        assert_eq!(store_data.lists[0].name, list1.name);
+        assert_eq!(store_data.lists[1].id, list2.id);
+        assert_eq!(store_data.lists[1].name, list2.name);
+        assert_eq!(store_data.lists[2].id, list3.id);
+        assert_eq!(store_data.lists[2].name, list3.name);
+        assert_eq!(store_data.lists.len(), 3);
+
+        fs::remove_file(set_current_lists_store_path);
+        assert_eq!(false, Path::new(set_current_lists_store_path).is_file());
         Ok(())
     }
 
     #[tokio::test]
     async fn set_current_list_spec() {
-        Ok(())
+        let store = Store::new();
+        assert!(store.current_list.is_none());
+
+        let list: List = FakeData::get_fake_list();
+        store.set_current_list(&list);
+
+        assert_eq!(store.current_list.unwrap().id, list.id);
+        assert_eq!(store.current_list.unwrap().name, list.name);
+
+        let list2: List = FakeData::get_fake_list();
+        store.set_current_list(&list2);
+
+        assert_eq!(store.current_list.unwrap().id, list2.id);
+        assert_eq!(store.current_list.unwrap().name, list2.name);
     }
 
     #[test]
@@ -405,12 +531,3 @@ mod tests {
         Ok(())
     }
 }
-
-// let new_config_name: &str = "/tmp/trustllo_new_config.json";
-
-// // check if file exists
-// assert_eq!(true, Path::new(new_config_name).is_file());
-
-// // remove the file
-// fs::remove_file(new_config_name);
-// assert_eq!(false, Path::new(new_config_name).is_file())
