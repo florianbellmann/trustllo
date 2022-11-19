@@ -19,7 +19,7 @@ pub struct Store {
     pub current_lists: Option<Vec<List>>,
     pub current_list: Option<List>,
     pub current_cards: Option<Vec<Card>>,
-    pub current_card: Option<Card>,
+    pub current_card: Option<Card>, //TODO: should this also be a reference? rather than a clone?
     pub last_card: Option<Card>,
 }
 
@@ -51,6 +51,7 @@ impl Store {
         Ok(())
     }
 
+    // TODO: change this custom path param passing to a private var stored in the store
     pub async fn nuke_all(&mut self, custom_path: Option<&str>) -> Result<()> {
         let _data_path = custom_path.unwrap_or(Store::DATA_PATH);
         self.remove_data_file(custom_path).await?;
@@ -79,14 +80,26 @@ impl Store {
 
     // lists
     // ----------------------------------------------------------------------------------------------------------------
-    pub async fn set_current_lists(&self, _lists: &Vec<List>) -> Result<()> {
-        todo!("update both file and memory");
-        todo!("update date updated field in file");
-        Ok(())
+    pub async fn set_current_lists(&mut self, lists: Vec<List>) -> Result<()> {
+        self.current_lists = Some(lists.clone());
+        let store_date = StoreData {
+            updated: "updated missing".to_string(),
+            boards: vec![self.current_board.clone().unwrap()],
+            lists,
+        };
+
+        let new_lists_data_store_string = serde_json::to_string(&store_date).unwrap();
+
+        // TODO: path is hardcoded here
+        // fuck tests fail bc of this. need to rework to priv var
+        Ok(fs::write(Store::DATA_PATH, new_lists_data_store_string)?)
     }
 
     pub fn set_current_list(&mut self, index: usize) {
-        self.current_list = Some(self.current_lists.unwrap()[index]);
+        let lists = self.current_lists.clone();
+        let list = &lists.unwrap()[index];
+        let new_list = list.clone();
+        self.current_list = Some(new_list);
     }
 
     // cards
@@ -280,7 +293,7 @@ mod tests {
         let list4: List = FakeData::get_fake_list();
 
         let lists = vec![list1, list2, list3, list4];
-        store.set_current_lists(&lists);
+        store.set_current_lists(lists);
 
         assert_eq!(store.current_lists.unwrap()[0].id, list1.id);
         assert_eq!(store.current_lists.unwrap()[0].name, list1.name);
@@ -311,7 +324,7 @@ mod tests {
         let list7: List = FakeData::get_fake_list();
 
         let lists = vec![list5, list6, list7];
-        store.set_current_lists(&lists);
+        store.set_current_lists(lists);
 
         assert_eq!(store.current_lists.unwrap()[0].id, list5.id);
         assert_eq!(store.current_lists.unwrap()[0].name, list5.name);
@@ -341,19 +354,26 @@ mod tests {
     #[tokio::test]
     async fn set_current_list_spec() {
         let store = Store::new();
+        let list1: List = FakeData::get_fake_list();
+        let list2: List = FakeData::get_fake_list();
+        let lists = vec![list1, list2];
+        store.set_current_lists(lists);
+
         assert!(store.current_list.is_none());
 
-        let list: List = FakeData::get_fake_list();
-        store.set_current_list(&list);
+        store.set_current_list(0);
 
-        assert_eq!(store.current_list.unwrap().id, list.id);
-        assert_eq!(store.current_list.unwrap().name, list.name);
+        assert_eq!(store.current_list.unwrap().id, list1.id);
+        assert_eq!(store.current_list.unwrap().name, list1.name);
 
-        let list2: List = FakeData::get_fake_list();
-        store.set_current_list(&list2);
+        store.set_current_list(1);
 
         assert_eq!(store.current_list.unwrap().id, list2.id);
         assert_eq!(store.current_list.unwrap().name, list2.name);
+
+        assert_eq!(true, Path::new(Store::DATA_PATH).is_file());
+        fs::remove_file(Store::DATA_PATH);
+        assert_eq!(false, Path::new(Store::DATA_PATH).is_file());
     }
 
     #[test]
