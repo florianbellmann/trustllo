@@ -203,11 +203,11 @@ mod tests {
         assert_eq!(store.current_lists.is_none(), false);
         assert_eq!(store.current_list.is_none(), false);
         assert_eq!(
-            store.current_list.unwrap().id,
+            store.current_list.as_ref().unwrap().id,
             fake_store_data.lists.first().unwrap().id
         );
         assert_eq!(
-            store.current_list.unwrap().name,
+            store.current_list.as_ref().unwrap().name,
             fake_store_data.lists.first().unwrap().name
         );
         assert_eq!(store.current_cards.is_none(), true);
@@ -221,7 +221,7 @@ mod tests {
 
     #[tokio::test]
     async fn nuke_all_spec() -> Result<()> {
-        let store = Store::new();
+        let mut store = Store::new();
         let nuke_store_path = "/tmp/trustllo_init_cache_data_store_path.json";
         store.create_empty_store(Some(nuke_store_path));
 
@@ -253,25 +253,25 @@ mod tests {
 
     #[test]
     fn set_current_board_spec() {
-        let store = Store::new();
+        let mut store = Store::new();
         assert!(store.current_board.is_none());
 
         let board1: Board = FakeData::get_fake_board();
         store.set_current_board(&board1);
 
-        assert_eq!(store.current_board.unwrap().id, board1.id);
-        assert_eq!(store.current_board.unwrap().name, board1.name);
+        assert_eq!(store.current_board.as_ref().unwrap().id, board1.id);
+        assert_eq!(store.current_board.as_ref().unwrap().name, board1.name);
 
         let board2: Board = FakeData::get_fake_board();
         store.set_current_board(&board2);
 
-        assert_eq!(store.current_card.unwrap().id, board2.id);
-        assert_eq!(store.current_card.unwrap().name, board2.name);
+        assert_eq!(store.current_card.as_ref().unwrap().id, board2.id);
+        assert_eq!(store.current_card.as_ref().unwrap().name, board2.name);
     }
 
     #[tokio::test]
     async fn set_current_lists_spec() -> Result<()> {
-        let store = Store::new();
+        let mut store = Store::new();
 
         let set_current_lists_store_path = "/tmp/trustllo_empty_data_store_path.json";
         store.create_empty_store(Some(set_current_lists_store_path));
@@ -295,15 +295,15 @@ mod tests {
         let lists = vec![list1, list2, list3, list4];
         store.set_current_lists(lists);
 
-        assert_eq!(store.current_lists.unwrap()[0].id, list1.id);
-        assert_eq!(store.current_lists.unwrap()[0].name, list1.name);
-        assert_eq!(store.current_lists.unwrap()[1].id, list2.id);
-        assert_eq!(store.current_lists.unwrap()[1].name, list2.name);
-        assert_eq!(store.current_lists.unwrap()[2].id, list3.id);
-        assert_eq!(store.current_lists.unwrap()[2].name, list3.name);
-        assert_eq!(store.current_lists.unwrap()[3].id, list4.id);
-        assert_eq!(store.current_lists.unwrap()[3].name, list4.name);
-        assert_eq!(store.current_lists.unwrap().len(), 4);
+        assert_eq!(store.current_lists.as_ref().unwrap()[0].id, list1.id);
+        assert_eq!(store.current_lists.as_ref().unwrap()[0].name, list1.name);
+        assert_eq!(store.current_lists.as_ref().unwrap()[1].id, list2.id);
+        assert_eq!(store.current_lists.as_ref().unwrap()[1].name, list2.name);
+        assert_eq!(store.current_lists.as_ref().unwrap()[2].id, list3.id);
+        assert_eq!(store.current_lists.as_ref().unwrap()[2].name, list3.name);
+        assert_eq!(store.current_lists.as_ref().unwrap()[3].id, list4.id);
+        assert_eq!(store.current_lists.as_ref().unwrap()[3].name, list4.name);
+        assert_eq!(store.current_lists.as_ref().unwrap().len(), 4);
 
         let mut file = File::open(set_current_lists_store_path).unwrap();
         let mut file_contents = String::new();
@@ -326,13 +326,13 @@ mod tests {
         let lists = vec![list5, list6, list7];
         store.set_current_lists(lists);
 
-        assert_eq!(store.current_lists.unwrap()[0].id, list5.id);
-        assert_eq!(store.current_lists.unwrap()[0].name, list5.name);
-        assert_eq!(store.current_lists.unwrap()[1].id, list6.id);
-        assert_eq!(store.current_lists.unwrap()[1].name, list6.name);
-        assert_eq!(store.current_lists.unwrap()[2].id, list7.id);
-        assert_eq!(store.current_lists.unwrap()[2].name, list7.name);
-        assert_eq!(store.current_lists.unwrap().len(), 3);
+        assert_eq!(store.current_lists.as_ref().unwrap()[0].id, list5.id);
+        assert_eq!(store.current_lists.as_ref().unwrap()[0].name, list5.name);
+        assert_eq!(store.current_lists.as_ref().unwrap()[1].id, list6.id);
+        assert_eq!(store.current_lists.as_ref().unwrap()[1].name, list6.name);
+        assert_eq!(store.current_lists.as_ref().unwrap()[2].id, list7.id);
+        assert_eq!(store.current_lists.as_ref().unwrap()[2].name, list7.name);
+        assert_eq!(store.current_lists.as_ref().unwrap().len(), 3);
 
         let mut file = File::open(set_current_lists_store_path).unwrap();
         let mut file_contents = String::new();
@@ -353,7 +353,7 @@ mod tests {
 
     #[tokio::test]
     async fn set_current_list_spec() {
-        let store = Store::new();
+        let mut store = Store::new();
         let list1: List = FakeData::get_fake_list();
         let list2: List = FakeData::get_fake_list();
         let lists = vec![list1, list2];
@@ -363,13 +363,13 @@ mod tests {
 
         store.set_current_list(0);
 
-        assert_eq!(store.current_list.unwrap().id, list1.id);
-        assert_eq!(store.current_list.unwrap().name, list1.name);
+        assert_eq!(store.current_list.as_ref().unwrap().id, list1.id);
+        assert_eq!(store.current_list.as_ref().unwrap().name, list1.name);
 
         store.set_current_list(1);
 
-        assert_eq!(store.current_list.unwrap().id, list2.id);
-        assert_eq!(store.current_list.unwrap().name, list2.name);
+        assert_eq!(store.current_list.as_ref().unwrap().id, list2.id);
+        assert_eq!(store.current_list.as_ref().unwrap().name, list2.name);
 
         assert_eq!(true, Path::new(Store::DATA_PATH).is_file());
         fs::remove_file(Store::DATA_PATH);
@@ -378,7 +378,7 @@ mod tests {
 
     #[test]
     fn set_current_cards_spec() {
-        let store = Store::new();
+        let mut store = Store::new();
         assert!(store.current_cards.is_none());
         assert!(store.current_card.is_none());
 
@@ -391,15 +391,15 @@ mod tests {
 
         store.set_current_cards(&cards);
 
-        assert_eq!(store.current_cards.unwrap()[0].id, card1.id);
-        assert_eq!(store.current_cards.unwrap()[0].name, card1.name);
-        assert_eq!(store.current_cards.unwrap()[1].id, card2.id);
-        assert_eq!(store.current_cards.unwrap()[1].name, card2.name);
-        assert_eq!(store.current_cards.unwrap()[2].id, card3.id);
-        assert_eq!(store.current_cards.unwrap()[2].name, card3.name);
-        assert_eq!(store.current_cards.unwrap()[3].id, card4.id);
-        assert_eq!(store.current_cards.unwrap()[3].name, card4.name);
-        assert_eq!(store.current_cards.unwrap().len(), 4);
+        assert_eq!(store.current_cards.as_ref().unwrap()[0].id, card1.id);
+        assert_eq!(store.current_cards.as_ref().unwrap()[0].name, card1.name);
+        assert_eq!(store.current_cards.as_ref().unwrap()[1].id, card2.id);
+        assert_eq!(store.current_cards.as_ref().unwrap()[1].name, card2.name);
+        assert_eq!(store.current_cards.as_ref().unwrap()[2].id, card3.id);
+        assert_eq!(store.current_cards.as_ref().unwrap()[2].name, card3.name);
+        assert_eq!(store.current_cards.as_ref().unwrap()[3].id, card4.id);
+        assert_eq!(store.current_cards.as_ref().unwrap()[3].name, card4.name);
+        assert_eq!(store.current_cards.as_ref().unwrap().len(), 4);
 
         let card5: Card = FakeData::get_fake_card();
         let card6: Card = FakeData::get_fake_card();
@@ -409,54 +409,54 @@ mod tests {
 
         store.set_current_cards(&cards);
 
-        assert_eq!(store.current_cards.unwrap()[0].id, card5.id);
-        assert_eq!(store.current_cards.unwrap()[0].name, card5.name);
-        assert_eq!(store.current_cards.unwrap()[1].id, card6.id);
-        assert_eq!(store.current_cards.unwrap()[1].name, card6.name);
-        assert_eq!(store.current_cards.unwrap()[2].id, card7.id);
-        assert_eq!(store.current_cards.unwrap()[2].name, card7.name);
-        assert_eq!(store.current_cards.unwrap().len(), 3)
+        assert_eq!(store.current_cards.as_ref().unwrap()[0].id, card5.id);
+        assert_eq!(store.current_cards.as_ref().unwrap()[0].name, card5.name);
+        assert_eq!(store.current_cards.as_ref().unwrap()[1].id, card6.id);
+        assert_eq!(store.current_cards.as_ref().unwrap()[1].name, card6.name);
+        assert_eq!(store.current_cards.as_ref().unwrap()[2].id, card7.id);
+        assert_eq!(store.current_cards.as_ref().unwrap()[2].name, card7.name);
+        assert_eq!(store.current_cards.as_ref().unwrap().len(), 3)
     }
 
     #[test]
     fn set_current_card_spec() {
-        let store = Store::new();
+        let mut store = Store::new();
         assert!(store.current_card.is_none());
 
         let card: Card = FakeData::get_fake_card();
         store.set_current_card(&card);
 
-        assert_eq!(store.current_card.unwrap().id, card.id);
-        assert_eq!(store.current_card.unwrap().name, card.name);
+        assert_eq!(store.current_card.as_ref().unwrap().id, card.id);
+        assert_eq!(store.current_card.as_ref().unwrap().name, card.name);
 
         let card2: Card = FakeData::get_fake_card();
         store.set_current_card(&card2);
 
-        assert_eq!(store.current_card.unwrap().id, card2.id);
-        assert_eq!(store.current_card.unwrap().name, card2.name);
+        assert_eq!(store.current_card.as_ref().unwrap().id, card2.id);
+        assert_eq!(store.current_card.as_ref().unwrap().name, card2.name);
     }
 
     #[test]
     fn set_last_card_spec() {
-        let store = Store::new();
+        let mut store = Store::new();
         assert!(store.last_card.is_none());
 
         let card: Card = FakeData::get_fake_card();
         store.set_last_card(&card);
 
-        assert_eq!(store.last_card.unwrap().id, card.id);
-        assert_eq!(store.last_card.unwrap().name, card.name);
+        assert_eq!(store.last_card.as_ref().unwrap().id, card.id);
+        assert_eq!(store.last_card.as_ref().unwrap().name, card.name);
 
         let card2: Card = FakeData::get_fake_card();
         store.set_current_card(&card2);
 
-        assert_eq!(store.last_card.unwrap().id, card2.id);
-        assert_eq!(store.last_card.unwrap().name, card2.name);
+        assert_eq!(store.last_card.as_ref().unwrap().id, card2.id);
+        assert_eq!(store.last_card.as_ref().unwrap().name, card2.name);
     }
 
     #[tokio::test]
     async fn read_data_from_file_spec() -> Result<()> {
-        let store = Store::new();
+        let mut store = Store::new();
 
         let read_data_store_path = "/tmp/trustllo_read_data_store_path.json";
         let fake_store_data = FakeData::get_fake_store_data();
@@ -486,7 +486,7 @@ mod tests {
 
     #[test]
     fn create_empty_store_spec() -> Result<()> {
-        let store = Store::new();
+        let mut store = Store::new();
 
         let empty_data_store_path = "/tmp/trustllo_empty_data_store_path.json";
         store.create_empty_store(Some(empty_data_store_path));
@@ -510,7 +510,7 @@ mod tests {
 
     #[tokio::test]
     async fn write_data_to_file_spec() -> Result<()> {
-        let store = Store::new();
+        let mut store = Store::new();
 
         let write_data_store_path = "/tmp/trustllo_write_data_store_path.json";
         let fake_store_data = FakeData::get_fake_store_data();
@@ -532,7 +532,7 @@ mod tests {
 
     #[tokio::test]
     async fn remove_data_file_spec() -> Result<()> {
-        let store = Store::new();
+        let mut store = Store::new();
 
         let remove_data_store_path = "/tmp/trustllo_remove_data_store_path.json";
         let fake_store_data = FakeData::get_fake_store_data();
