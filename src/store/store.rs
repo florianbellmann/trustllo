@@ -21,13 +21,16 @@ pub struct Store {
     pub current_cards: Option<Vec<Card>>,
     pub current_card: Option<Card>, //TODO: should this also be a reference? rather than a clone?
     pub last_card: Option<Card>,
+    data_path: String,
 }
 
 impl Store {
     const DATA_PATH: &str = "data.json";
 
     // TODO: Make sure this is used as a singleton!
-    pub fn new() -> Store {
+    pub fn new(custom_path: Option<&str>) -> Store {
+        let data_path = custom_path.unwrap_or(Store::DATA_PATH);
+
         Store {
             // TODO: missing is the multiple board support
             current_board: None,
@@ -36,12 +39,12 @@ impl Store {
             current_cards: None,
             current_card: None,
             last_card: None,
+            data_path: data_path.to_string(),
         }
     }
 
-    pub async fn init_from_cache(&mut self, custom_path: Option<&str>) -> Result<()> {
-        let data_path = custom_path.unwrap_or(Store::DATA_PATH);
-        let store_data = self.read_data_from_file(Some(data_path))?;
+    pub async fn init_from_cache(&mut self) -> Result<()> {
+        let store_data = self.read_data_from_file()?;
 
         self.current_board = store_data.boards.first().cloned();
         self.current_lists = Some(store_data.lists.clone());
@@ -51,10 +54,8 @@ impl Store {
         Ok(())
     }
 
-    // TODO: change this custom path param passing to a private var stored in the store
-    pub async fn nuke_all(&mut self, custom_path: Option<&str>) -> Result<()> {
-        let _data_path = custom_path.unwrap_or(Store::DATA_PATH);
-        self.remove_data_file(custom_path).await?;
+    pub async fn nuke_all(&mut self) -> Result<()> {
+        self.remove_data_file().await?;
 
         self.current_board = None;
         self.current_lists = None;
@@ -90,9 +91,7 @@ impl Store {
 
         let new_lists_data_store_string = serde_json::to_string(&store_date).unwrap();
 
-        // TODO: path is hardcoded here
-        // fuck tests fail bc of this. need to rework to priv var
-        Ok(fs::write(Store::DATA_PATH, new_lists_data_store_string)?)
+        Ok(fs::write(&self.data_path, new_lists_data_store_string)?)
     }
 
     pub fn set_current_list(&mut self, index: usize) {
@@ -116,9 +115,8 @@ impl Store {
 
     // file system
     // ----------------------------------------------------------------------------------------------------------------
-    fn read_data_from_file(&self, custom_path: Option<&str>) -> Result<StoreData> {
-        let data_path = custom_path.unwrap_or(Store::DATA_PATH);
-        let mut file = File::open(data_path).unwrap();
+    fn read_data_from_file(&self) -> Result<StoreData> {
+        let mut file = File::open(&self.data_path).unwrap();
         let mut file_contents = String::new();
         file.read_to_string(&mut file_contents)?;
 
@@ -126,8 +124,7 @@ impl Store {
         Ok(store_data)
     }
 
-    fn create_empty_store(&self, custom_path: Option<&str>) -> Result<()> {
-        let data_path = custom_path.unwrap_or(Store::DATA_PATH);
+    fn create_empty_store(&self) -> Result<()> {
         let empty_store_data: StoreData = StoreData {
             updated: "missing date".to_string(), //TODO: not implemented yet
             boards: vec![],
@@ -139,24 +136,18 @@ impl Store {
             "New StoreData with contents {} created.",
             &empty_store_data_string
         );
-        Ok(fs::write(data_path, empty_store_data_string)?)
+        Ok(fs::write(&self.data_path, empty_store_data_string)?)
     }
 
-    async fn write_data_to_file(
-        &self,
-        new_store_data: StoreData,
-        custom_path: Option<&str>,
-    ) -> Result<()> {
-        let data_path = custom_path.unwrap_or(Store::DATA_PATH);
+    async fn write_data_to_file(&self, new_store_data: StoreData) -> Result<()> {
         let new_store_data_string = serde_json::to_string(&new_store_data).unwrap();
         info!("Updating store file.");
-        Ok(fs::write(data_path, new_store_data_string)?)
+        Ok(fs::write(&self.data_path, new_store_data_string)?)
     }
 
-    async fn remove_data_file(&self, custom_path: Option<&str>) -> Result<()> {
-        let data_path = custom_path.unwrap_or(Store::DATA_PATH);
+    async fn remove_data_file(&self) -> Result<()> {
         info!("Removing store file.");
-        fs::remove_file(data_path);
+        fs::remove_file(&self.data_path);
         Ok(())
     }
 }
@@ -181,7 +172,8 @@ mod tests {
 
     #[tokio::test]
     async fn init_from_cache_spec() -> Result<()> {
-        let mut store = Store::new();
+        let init_cache_data_store_path = "/tmp/trustllo_init_cache_data_store_path.json";
+        let mut store = Store::new(Some(init_cache_data_store_path));
 
         // TODO: updated field is missing
         assert_eq!(store.current_board.is_none(), true);
@@ -191,12 +183,11 @@ mod tests {
         assert_eq!(store.current_card.is_none(), true);
         assert_eq!(store.last_card.is_none(), true);
 
-        let init_cache_data_store_path = "/tmp/trustllo_init_cache_data_store_path.json";
         let fake_store_data = FakeData::get_fake_store_data();
         let fake_store_data_string = serde_json::to_string(&fake_store_data).unwrap();
         fs::write(init_cache_data_store_path, fake_store_data_string);
 
-        store.init_from_cache(Some(init_cache_data_store_path));
+        store.init_from_cache();
 
         // TODO: multiple board support still missing
         assert_eq!(store.current_board.is_none(), false);
@@ -221,9 +212,9 @@ mod tests {
 
     #[tokio::test]
     async fn nuke_all_spec() -> Result<()> {
-        let mut store = Store::new();
-        let nuke_store_path = "/tmp/trustllo_init_cache_data_store_path.json";
-        store.create_empty_store(Some(nuke_store_path));
+        let nuke_store_path = "/tmp/trustllo_nuke_data_store_path.json";
+        let mut store = Store::new(Some(nuke_store_path));
+        store.create_empty_store();
 
         assert_eq!(true, Path::new(nuke_store_path).is_file());
         let mut file = File::open(nuke_store_path).unwrap();
@@ -233,7 +224,7 @@ mod tests {
         assert_eq!(store_data.boards.len(), 0);
         assert_eq!(store_data.lists.len(), 0);
 
-        store.nuke_all(Some(nuke_store_path));
+        store.nuke_all();
         assert_eq!(false, Path::new(nuke_store_path).is_file());
         assert!(store.current_board.is_none());
         assert!(store.current_lists.is_none());
@@ -247,13 +238,14 @@ mod tests {
 
     #[tokio::test]
     async fn set_boards_spec() -> Result<()> {
-        //TODO: implement with multiple board support
+        //TODO: implement with multiple board support. Take file creation into account
         Ok(())
     }
 
     #[test]
     fn set_current_board_spec() {
-        let mut store = Store::new();
+        let set_current_board_store_path = "/tmp/trustllo_set_current_board_data_store_path.json";
+        let mut store = Store::new(Some(set_current_board_store_path));
         assert!(store.current_board.is_none());
 
         let board1: Board = FakeData::get_fake_board();
@@ -267,14 +259,18 @@ mod tests {
 
         assert_eq!(store.current_card.as_ref().unwrap().id, board2.id);
         assert_eq!(store.current_card.as_ref().unwrap().name, board2.name);
+
+        assert_eq!(true, Path::new(set_current_board_store_path).is_file());
+        fs::remove_file(set_current_board_store_path);
+        assert_eq!(false, Path::new(set_current_board_store_path).is_file());
     }
 
     #[tokio::test]
     async fn set_current_lists_spec() -> Result<()> {
-        let mut store = Store::new();
+        let set_current_lists_store_path = "/tmp/trustllo_set_current_lists_data_store_path.json";
+        let mut store = Store::new(Some(set_current_lists_store_path));
 
-        let set_current_lists_store_path = "/tmp/trustllo_empty_data_store_path.json";
-        store.create_empty_store(Some(set_current_lists_store_path));
+        store.create_empty_store();
 
         assert_eq!(true, Path::new(set_current_lists_store_path).is_file());
 
@@ -353,7 +349,9 @@ mod tests {
 
     #[tokio::test]
     async fn set_current_list_spec() {
-        let mut store = Store::new();
+        let set_current_lists_store_path = "/tmp/trustllo_set_current_lists_data_store_path.json";
+        let mut store = Store::new(Some(set_current_lists_store_path));
+
         let list1: List = FakeData::get_fake_list();
         let list2: List = FakeData::get_fake_list();
         let lists = vec![list1, list2];
@@ -371,14 +369,16 @@ mod tests {
         assert_eq!(store.current_list.as_ref().unwrap().id, list2.id);
         assert_eq!(store.current_list.as_ref().unwrap().name, list2.name);
 
-        assert_eq!(true, Path::new(Store::DATA_PATH).is_file());
-        fs::remove_file(Store::DATA_PATH);
-        assert_eq!(false, Path::new(Store::DATA_PATH).is_file());
+        assert_eq!(true, Path::new(set_current_lists_store_path).is_file());
+        fs::remove_file(set_current_lists_store_path);
+        assert_eq!(false, Path::new(set_current_lists_store_path).is_file());
     }
 
     #[test]
     fn set_current_cards_spec() {
-        let mut store = Store::new();
+        let set_current_cards_data_store_path =
+            "/tmp/trustllo_set_current_cards_data_store_path.json";
+        let mut store = Store::new(Some(set_current_cards_data_store_path));
         assert!(store.current_cards.is_none());
         assert!(store.current_card.is_none());
 
@@ -415,12 +415,19 @@ mod tests {
         assert_eq!(store.current_cards.as_ref().unwrap()[1].name, card6.name);
         assert_eq!(store.current_cards.as_ref().unwrap()[2].id, card7.id);
         assert_eq!(store.current_cards.as_ref().unwrap()[2].name, card7.name);
-        assert_eq!(store.current_cards.as_ref().unwrap().len(), 3)
+        assert_eq!(store.current_cards.as_ref().unwrap().len(), 3);
+
+        assert_eq!(
+            false,
+            Path::new(set_current_cards_data_store_path).is_file()
+        );
     }
 
     #[test]
     fn set_current_card_spec() {
-        let mut store = Store::new();
+        let set_current_card_data_store_path =
+            "/tmp/trustllo_set_current_card_data_store_path.json";
+        let mut store = Store::new(Some(set_current_card_data_store_path));
         assert!(store.current_card.is_none());
 
         let card: Card = FakeData::get_fake_card();
@@ -434,11 +441,14 @@ mod tests {
 
         assert_eq!(store.current_card.as_ref().unwrap().id, card2.id);
         assert_eq!(store.current_card.as_ref().unwrap().name, card2.name);
+
+        assert_eq!(false, Path::new(set_current_card_data_store_path).is_file());
     }
 
     #[test]
     fn set_last_card_spec() {
-        let mut store = Store::new();
+        let set_last_card_data_store_path = "/tmp/trustllo_set_last_card_data_store_path.json";
+        let mut store = Store::new(Some(set_last_card_data_store_path));
         assert!(store.last_card.is_none());
 
         let card: Card = FakeData::get_fake_card();
@@ -452,19 +462,21 @@ mod tests {
 
         assert_eq!(store.last_card.as_ref().unwrap().id, card2.id);
         assert_eq!(store.last_card.as_ref().unwrap().name, card2.name);
+
+        assert_eq!(false, Path::new(set_last_card_data_store_path).is_file());
     }
 
     #[tokio::test]
     async fn read_data_from_file_spec() -> Result<()> {
-        let mut store = Store::new();
-
         let read_data_store_path = "/tmp/trustllo_read_data_store_path.json";
+        let mut store = Store::new(Some(read_data_store_path));
+
         let fake_store_data = FakeData::get_fake_store_data();
         let fake_store_data_string = serde_json::to_string(&fake_store_data).unwrap();
         fs::write(read_data_store_path, fake_store_data_string);
         assert_eq!(true, Path::new(read_data_store_path).is_file());
 
-        let store_data: StoreData = store.read_data_from_file(Some(read_data_store_path))?;
+        let store_data: StoreData = store.read_data_from_file()?;
 
         assert_eq!(store_data.boards.len(), fake_store_data.boards.len());
         assert_eq!(
@@ -486,10 +498,10 @@ mod tests {
 
     #[test]
     fn create_empty_store_spec() -> Result<()> {
-        let mut store = Store::new();
-
         let empty_data_store_path = "/tmp/trustllo_empty_data_store_path.json";
-        store.create_empty_store(Some(empty_data_store_path));
+        let mut store = Store::new(Some(empty_data_store_path));
+
+        store.create_empty_store();
 
         assert_eq!(true, Path::new(empty_data_store_path).is_file());
 
@@ -510,9 +522,9 @@ mod tests {
 
     #[tokio::test]
     async fn write_data_to_file_spec() -> Result<()> {
-        let mut store = Store::new();
-
         let write_data_store_path = "/tmp/trustllo_write_data_store_path.json";
+        let mut store = Store::new(Some(write_data_store_path));
+
         let fake_store_data = FakeData::get_fake_store_data();
         let fake_store_data_string = serde_json::to_string(&fake_store_data).unwrap();
 
@@ -532,20 +544,20 @@ mod tests {
 
     #[tokio::test]
     async fn remove_data_file_spec() -> Result<()> {
-        let mut store = Store::new();
-
         let remove_data_store_path = "/tmp/trustllo_remove_data_store_path.json";
+        let mut store = Store::new(Some(remove_data_store_path));
+
         let fake_store_data = FakeData::get_fake_store_data();
         let fake_store_data_string = serde_json::to_string(&fake_store_data).unwrap();
         fs::write(remove_data_store_path, fake_store_data_string);
 
         assert_eq!(true, Path::new(remove_data_store_path).is_file());
 
-        store.remove_data_file(Some(remove_data_store_path));
+        store.remove_data_file();
         assert_eq!(false, Path::new(remove_data_store_path).is_file());
 
         // do it twice so we see it doesn't panic
-        store.remove_data_file(Some(remove_data_store_path));
+        store.remove_data_file();
         assert_eq!(false, Path::new(remove_data_store_path).is_file());
 
         Ok(())

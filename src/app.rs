@@ -1,5 +1,5 @@
 use anyhow::Result;
-use log::{error, info, debug};
+use log::{debug, error, info};
 // use crossterm::{
 //     event::{DisableMouseCapture, EnableMouseCapture},
 //     execute,
@@ -57,7 +57,7 @@ impl ApplicationService {
     pub fn new() -> ApplicationService {
         ApplicationService {
             api_connector: ApiConnector::new(),
-            store: Store::new(),
+            store: Store::new(None),
         }
     }
 
