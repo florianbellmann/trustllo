@@ -1,5 +1,5 @@
 use anyhow::Result;
-use log::{debug, error, info};
+use log::{debug};
 // use crossterm::{
 //     event::{DisableMouseCapture, EnableMouseCapture},
 //     execute,

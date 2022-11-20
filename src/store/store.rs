@@ -49,7 +49,7 @@ impl Store {
         let store_data = self.read_data_from_file()?;
 
         self.boards = Some(store_data.boards);
-        self.current_lists = Some(store_data.lists.clone());
+        self.current_lists = Some(store_data.lists);
         self.current_board_index = Some(0);
         self.current_list_index = Some(0);
 
@@ -77,7 +77,7 @@ impl Store {
     pub async fn set_boards(&mut self, boards: Vec<Board>) -> Result<()> {
         self.boards = Some(boards.clone());
         self.current_board_index = Some(0);
-        let lists = self.current_lists.clone().unwrap_or(vec![]);
+        let lists = self.current_lists.clone().unwrap_or_default();
         let store_date = StoreData {
             updated: "updated missing".to_string(),
             boards,
@@ -100,7 +100,7 @@ impl Store {
     pub fn set_current_lists(&mut self, lists: Vec<List>) -> Result<()> {
         self.current_lists = Some(lists.clone());
         self.current_list_index = Some(0);
-        let boards = self.boards.clone().unwrap_or(vec![]);
+        let boards = self.boards.clone().unwrap_or_default();
         let store_date = StoreData {
             updated: "updated missing".to_string(),
             boards,
@@ -458,7 +458,7 @@ mod tests {
 
         assert!(store.current_list_index.is_none());
         store.set_current_lists(lists)?;
-        assert!(!store.current_list_index.is_none());
+        assert!(store.current_list_index.is_some());
 
         store.set_current_list_index(0);
         assert_eq!(store.current_list_index.unwrap(), 0);
