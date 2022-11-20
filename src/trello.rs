@@ -15,7 +15,7 @@ impl Endpoint {
 }
 
 // TODO: still a lot of the fields missing
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Copy, Clone)]
 pub struct Board {
     pub name: String,
     pub desc: String,
@@ -49,7 +49,7 @@ pub struct Board {
     // memberships: Membership[],
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Copy, Clone)]
 pub struct List {
     pub id: String,
     pub name: String,
@@ -60,7 +60,7 @@ pub struct List {
     pub subscribed: bool,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Copy, Clone)]
 pub struct Card {
     pub id: String,
     // checkItemStates: null,
@@ -94,7 +94,7 @@ pub struct Card {
     // cover: Cover,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Copy, Clone)]
 pub struct Label {}
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Copy, Clone)]
 pub struct Checklist {}
