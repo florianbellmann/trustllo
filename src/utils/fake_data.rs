@@ -41,11 +41,11 @@ impl FakeData {
             idBoard: Faker.fake::<String>(),
             idList: Faker.fake::<String>(),
             manualCoverAttachment: Boolean(50).fake(),
-            shortLink: todo!(),
+            shortLink: Faker.fake::<String>(),
             dueComplete: Boolean(50).fake(),
-            shortUrl: todo!(),
+            shortUrl: Faker.fake::<String>(),
             subscribed: Boolean(50).fake(),
-            url: todo!(),
+            url: Faker.fake::<String>(),
         }
     }
 
