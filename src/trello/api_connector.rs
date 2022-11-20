@@ -3,7 +3,7 @@ use std::collections::HashMap;
 
 use anyhow::{anyhow, Result};
 
-use log::{info, error};
+use log::{error, info};
 use reqwest::{Method, StatusCode};
 use serde::Deserialize;
 
@@ -189,7 +189,10 @@ impl ApiConnector {
     where
         T: for<'a> Deserialize<'a>,
     {
-        let config = ConfigManager::read_config(None).unwrap(); //TODO: static config is also still hardcoded
+        //TODO: static config is also still hardcoded.
+        // also does this make sense to always read in from file? the config should be stored in
+        // memory
+        let config = ConfigManager::read_config(None).unwrap();
 
         let request_url = format!("{}{}{}", ApiConnector::API_URL, endpoint, path,);
 

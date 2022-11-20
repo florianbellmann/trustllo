@@ -9,6 +9,8 @@ use super::Config;
 pub struct ConfigManager {}
 
 //TODO:  should this also be an instance instead of static?
+// if we moved the custom path to a private var like in store. we could make it an instance. but do
+// we then have to pass this around?
 impl ConfigManager {
     // TODO: remove my name
     const DEFAULT_CONFIG_LOCATION: &str = "/Users/florian.juesten/.config/trustllo/config.json";
