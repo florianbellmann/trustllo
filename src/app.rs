@@ -1,47 +1,5 @@
 use anyhow::Result;
-use log::{debug};
-// use crossterm::{
-//     event::{DisableMouseCapture, EnableMouseCapture},
-//     execute,
-//     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
-// };
-// use std::{error::Error, io};
-// use tui::{backend::CrosstermBackend, Terminal};
-
-// use std::{
-//     boxed::Box,
-//     io::{stderr, stdout, Write},
-//     thread,
-//     time::Duration,
-// };
-
-// mod app;
-// mod ui;
-//
-// use std::io;
-
-// use crossterm::event::Event;
-// use crossterm::event::{ self, KeyCode };
-// use tui::backend::Backend;
-// use tui::Terminal;
-
-// // use crate::ui;
-
-// pub fn run_app<B: Backend>(terminal: &mut Terminal<B>) -> io::Result<()> {
-//     loop {
-//         terminal.draw(ui::draw_interface)?;
-
-//         if let Event::Key(key) = event::read()? {
-//             if let KeyCode::Char('q') = key.code {
-//                 return Ok(());
-//             }
-//         }
-//     }
-// }
-
-// // TODO: Test if q exits the app
-//
-//
+use log::debug;
 
 use crate::{
     config::config_manager::ConfigManager, store::store::Store,
@@ -66,7 +24,7 @@ impl ApplicationService {
 
         // TODO add functionality for custom config
         if !ConfigManager::config_exists(None) {
-            let (key, token, member_id) = Cli::read_config();
+            let (key, token, member_id) = Cli::read_config_from_user_input();
             ConfigManager::create_config(key, token, member_id, None);
         }
 
@@ -101,37 +59,6 @@ impl ApplicationService {
 
         //load data
 
-        // init terminal
-        // fn main() -> Result<(), Box<dyn Error>> {
-        // // Check if the current environment is in a terminal.
-        // check_if_terminal();
-
-        // // setup terminal
-        // enable_raw_mode()?; // send data byte by byte to terminal
-        // let mut stdout = io::stdout();
-        // execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
-        // let backend = CrosstermBackend::new(stdout);
-        // let mut terminal = Terminal::new(backend)?;
-
-        // // create app and run it
-        // let res = app::run_app(&mut terminal);
-
-        // // restore terminal
-        // disable_raw_mode()?;
-        // execute!(
-        //     terminal.backend_mut(),
-        //     LeaveAlternateScreen,
-        //     DisableMouseCapture
-        // )?;
-        // terminal.show_cursor()?;
-
-        // // Error handling
-        // if let Err(err) = res {
-        //     println!("{:?}", err);
-        // }
-
-        // Ok(())
-
         // display data
 
         // init keyboard listener
@@ -146,6 +73,11 @@ impl ApplicationService {
         debug!("Starting app loop.");
         // TODO: actually build the app loop
 
+// pub fn run_app<B: Backend>(terminal: &mut Terminal<B>) -> io::Result<()> {
+//     loop {
+//     }
+// }
+//
         // todo!()
     }
 
