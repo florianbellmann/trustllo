@@ -6,10 +6,10 @@ use crossterm::{
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
-use std::{error::Error, io};
+use std::{io};
 use tui::{backend::CrosstermBackend, Terminal};
 
-use std::{boxed::Box, io::stderr, thread, time::Duration};
+use std::{io::stderr, thread, time::Duration};
 
 use tui::{
     backend::Backend,
@@ -20,8 +20,8 @@ use tui::{
     Frame,
 };
 
-use crossterm::event::Event;
-use crossterm::event::{self, KeyCode};
+
+
 
 pub struct Cli {
     terminal: Terminal<CrosstermBackend<Stdout>>,
@@ -52,7 +52,7 @@ impl Cli {
             DisableMouseCapture
         );
 
-        &self.terminal.show_cursor();
+        let _ = self.terminal.show_cursor();
     }
 
     pub fn draw(&mut self) -> Result<()> {
