@@ -1,4 +1,5 @@
 use anyhow::Result;
+use crossterm::event::{Event, KeyCode, self};
 use log::debug;
 
 use crate::{
@@ -22,9 +23,11 @@ impl ApplicationService {
     pub async fn init(&self) -> Result<()> {
         debug!("Initializing app.");
 
+        let cli = Cli::new(); // TODO: remove this cli instance
+
         // TODO add functionality for custom config
         if !ConfigManager::config_exists(None) {
-            let (key, token, member_id) = Cli::read_config_from_user_input();
+            let (key, token, member_id) = cli.read_config_from_user_input();
             ConfigManager::create_config(key, token, member_id, None);
         }
 
@@ -60,6 +63,7 @@ impl ApplicationService {
         //load data
 
         // display data
+        //
 
         // init keyboard listener
         Ok(())
@@ -69,15 +73,26 @@ impl ApplicationService {
         debug!("Tearing down app.");
     }
 
-    pub fn run_app_loop(&self) {
+    pub fn run_app_loop(&self) -> Result<()> {
         debug!("Starting app loop.");
         // TODO: actually build the app loop
+        let mut cli = Cli::new(); // TODO: remove this cli instance
 
-// pub fn run_app<B: Backend>(terminal: &mut Terminal<B>) -> io::Result<()> {
-//     loop {
-//     }
-// }
-//
+        loop {
+            cli.draw();
+
+            if let Event::Key(key) = event::read()? {
+                if let KeyCode::Char('q') = key.code {
+                    return Ok(());
+                }
+            }
+        }
+        // pub fn run_app<B: Backend>(terminal: &mut Terminal<B>) -> io::Result<()> {
+        //     loop {
+        //     }
+        // }
+        //
+        Ok(())
         // todo!()
     }
 
