@@ -71,6 +71,7 @@ impl ApplicationService {
 
     pub fn teardown(&self) {
         debug!("Tearing down app.");
+        // cli restore needed 
     }
 
     pub fn run_app_loop(&self) -> Result<()> {

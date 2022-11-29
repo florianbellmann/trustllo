@@ -6,7 +6,7 @@ use crossterm::{
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
-use std::{io};
+use std::io;
 use tui::{backend::CrosstermBackend, Terminal};
 
 use std::{io::stderr, thread, time::Duration};
@@ -20,8 +20,10 @@ use tui::{
     Frame,
 };
 
-
-
+use super::layout::{
+    get_board_header, get_card_checklist, get_card_description, get_card_detail_layout,
+    get_left_pane_layout, get_main_layout, get_main_window, get_card_title,
+};
 
 pub struct Cli {
     terminal: Terminal<CrosstermBackend<Stdout>>,
@@ -56,146 +58,31 @@ impl Cli {
     }
 
     pub fn draw(&mut self) -> Result<()> {
-        self.terminal.draw(|f| Self::ui(f))?;
+        self.terminal.draw(|f| Self::build_ui(f))?;
         Ok(())
     }
 
-    fn ui<B: Backend>(f: &mut Frame<B>) {
+    fn build_ui<B: Backend>(f: &mut Frame<B>) {
         let size = f.size();
 
-        // Surrounding block
-        let main_window = Block::default()
-            .borders(Borders::ALL)
-            .title(Span::styled(" TRusTLLo ", Style::default().fg(Color::Red)))
-            .title_alignment(Alignment::Center);
-
+        let main_window = get_main_window();
         f.render_widget(main_window, size);
 
-        let column_layout = Layout::default()
-            .direction(Direction::Horizontal)
-            .margin(1)
-            .constraints([Constraint::Percentage(35), Constraint::Percentage(65)].as_ref())
-            .split(f.size());
+        let main_layout = get_main_layout().split(size);
+        let left_pane_layout = get_left_pane_layout().split(main_layout[0]);
+        // let right_pane_layout = get_right_pane_layout();
 
-        // left pane
-        let left_layout = Layout::default()
-            .direction(Direction::Vertical)
-            .constraints([Constraint::Length(3), Constraint::Percentage(100)].as_ref())
-            .split(column_layout[0]);
+        let board_header = get_board_header();
+        f.render_widget(board_header, left_pane_layout[1]);
 
-        let board_block = Block::default().title("Board").borders(Borders::ALL);
-        f.render_widget(board_block, left_layout[0]);
-
-        let card_block = Block::default().title("Card").borders(Borders::ALL);
-        f.render_widget(card_block, left_layout[1]);
-
-        let card_detail_layout = Layout::default()
-            .direction(Direction::Vertical)
-            .margin(1)
-            .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
-            .split(left_layout[1]);
-
-        let card_description = Block::default().title("Description").borders(Borders::ALL);
-        f.render_widget(card_description, card_detail_layout[0]);
-        let card_checklist = Block::default().title("Checklist").borders(Borders::ALL);
-        f.render_widget(card_checklist, card_detail_layout[1]);
-
-        // right pane
-        let lists_block = Block::default().title("Lists").borders(Borders::ALL);
-        f.render_widget(lists_block, column_layout[1]);
-
-        let list_layout = Layout::default()
-            .direction(Direction::Horizontal)
-            .margin(1)
-            .constraints(
-                [
-                    Constraint::Percentage(25),
-                    Constraint::Percentage(25),
-                    Constraint::Percentage(25),
-                    Constraint::Percentage(25),
-                ]
-                .as_ref(),
-            )
-            .split(column_layout[1]);
-
-        let list_1 = Block::default().title("List 1").borders(Borders::ALL);
-        f.render_widget(list_1, list_layout[0]);
-        let list_2 = Block::default().title("List 2").borders(Borders::ALL);
-        f.render_widget(list_2, list_layout[1]);
-
-        // Text
-        let texts = vec![
-            Spans::from("tjdskl"),
-            Spans::from("tjdskl"),
-            Spans::from("tjdskl"),
-        ];
-        let p = Paragraph::new(texts);
-        // .block(lists_block);
-        f.render_widget(p, list_layout[2]);
-
-        let lst_items: Vec<ListItem> = ["jkl", "jjdfskl", "fjdsklslkjf"]
-            .iter()
-            .map(|_i| ListItem::new("fdsjkl"))
-            .collect();
-
-        let list = List::new(lst_items)
-            .block(
-                Block::default()
-                    .title("titleee")
-                    .borders(Borders::ALL)
-                    .border_style(Style::default()),
-            )
-            .style(Style::default());
-        f.render_widget(list, list_layout[3]);
-
-        // let card_block = Block::default().title("Card").borders(Borders::ALL);
-        // f.render_widget(card_block, left_layout[1]);
-        //         let board_block = Block::default().title("Board").borders(Borders::ALL);
-        // f.render_widget(board_block, left_layout[0]);
-
-        // let list_layout = Layout::default()
-        //     .direction(Direction::Horizontal)
-        //     .margin(1)
-        //     .constraints(
-        //         [
-        //             Constraint::Percentage(25),
-        //             Constraint::Percentage(25),
-        //             Constraint::Percentage(25),
-        //             Constraint::Percentage(25),
-        //         ]
-        //         .as_ref(),
-        //     )
-        //     .split(column_layout[1]);
-
-        // let list_1 = Block::default().title("List 1").borders(Borders::ALL);
-        // f.render_widget(list_1, list_layout[0]);
-        // let list_2 = Block::default().title("List 2").borders(Borders::ALL);
-        // f.render_widget(list_2, list_layout[1]);
-        // // Text
-        // let texts = vec![
-        //     Spans::from("tjdskl"),
-        //     Spans::from("tjdskl"),
-        //     Spans::from("tjdskl"),
-        // ];
-        // let p = Paragraph::new(texts);
-        // // .block(lists_block);
-        // f.render_widget(p, list_layout[2]);
-        //         let lst_items: Vec<ListItem> = ["jkl", "jjdfskl", "fjdsklslkjf"]
-        //     .iter()
-        //     .map(|_i| ListItem::new("fdsjkl"))
-        //     .collect();
+        let card_detail_layout = get_card_detail_layout().split(left_pane_layout[1]);
+        let card_title = get_card_title();
+        let card_description = get_card_description();
+        let card_checklist = get_card_checklist();
+        f.render_widget(card_title, card_detail_layout[0]);
+        f.render_widget(card_description, card_detail_layout[1]);
+        f.render_widget(card_checklist, card_detail_layout[2]);
     }
-
-    pub fn redraw() {}
-
-    // fn drawboard(){
-
-    // }
-    // fn drawcards(){
-
-    // }
-    // fn drawlists(){
-    // }
 
     pub fn read_config_from_user_input(&self) -> (String, String, String) {
         let mut api_key = String::new();
@@ -258,5 +145,6 @@ impl Cli {
 #[cfg(test)]
 mod tests {
     #[test]
+    // TODO: what can I actually test in this file?
     fn config_exists_spec() {}
 }
