@@ -13,12 +13,17 @@ use std::{io::stderr, thread, time::Duration};
 
 use tui::{
     backend::Backend,
+    layout::{Alignment, Constraint, Direction, Layout},
+    style::{Color, Style},
+    text::{Span, Spans},
+    widgets::{Block, Borders, List, ListItem, Paragraph},
     Frame,
 };
 
 use super::layout::{
-    get_board_header, get_card_checklist, get_card_description, get_card_detail_layout,
-    get_left_pane_layout, get_main_layout, get_main_window, get_card_title,
+    get_board_header, get_card_detail, get_card_detail_checklist, get_card_detail_description,
+    get_card_detail_layout, get_card_detail_title, get_left_pane_layout, get_list, get_lists,
+    get_lists_layout, get_main_layout, get_main_window, get_right_pane_layout,
 };
 
 pub struct Cli {
@@ -58,26 +63,53 @@ impl Cli {
         Ok(())
     }
 
+    pub fn render(
+        board_name: &str,
+        current_board_index: usize,
+        current_lists: Vec<&str>,
+        current_list_index: usize,
+        current_cards: Vec<&str>,
+        current_card_index: usize,
+    ) {
+        ...
+        here i shuold build the ui and render it 
+        only use the info that you need right now
+        best case also as a reference
+    }
+
     fn build_ui<B: Backend>(f: &mut Frame<B>) {
         let size = f.size();
 
-        let main_window = get_main_window();
-        f.render_widget(main_window, size);
+        // INFO: removed main window for now
+        // let main_window = get_main_window();
+        // f.render_widget(main_window, size);
 
         let main_layout = get_main_layout().split(size);
         let left_pane_layout = get_left_pane_layout().split(main_layout[0]);
-        // let right_pane_layout = get_right_pane_layout();
+        let right_pane_layout = get_right_pane_layout().split(main_layout[1]);
 
         let board_header = get_board_header();
-        f.render_widget(board_header, left_pane_layout[1]);
+        f.render_widget(board_header, left_pane_layout[0]);
 
+        let card_detail = get_card_detail();
         let card_detail_layout = get_card_detail_layout().split(left_pane_layout[1]);
-        let card_title = get_card_title();
-        let card_description = get_card_description();
-        let card_checklist = get_card_checklist();
-        f.render_widget(card_title, card_detail_layout[0]);
-        f.render_widget(card_description, card_detail_layout[1]);
-        f.render_widget(card_checklist, card_detail_layout[2]);
+        let card_detail_title = get_card_detail_title();
+        let card_detail_description = get_card_detail_description();
+        let card_detail_checklist = get_card_detail_checklist();
+        f.render_widget(card_detail, left_pane_layout[1]);
+        f.render_widget(card_detail_title, card_detail_layout[0]);
+        f.render_widget(card_detail_description, card_detail_layout[1]);
+        f.render_widget(card_detail_checklist, card_detail_layout[2]);
+
+        let lists = get_lists();
+        let lists_layout = get_lists_layout().split(right_pane_layout[0]);
+        let list1 = get_list();
+        let list2 = get_list();
+        let list3 = get_list();
+        f.render_widget(lists, main_layout[1]);
+        f.render_widget(list1, lists_layout[0]);
+        f.render_widget(list2, lists_layout[1]);
+        f.render_widget(list3, lists_layout[2]);
     }
 
     pub fn read_config_from_user_input(&self) -> (String, String, String) {
