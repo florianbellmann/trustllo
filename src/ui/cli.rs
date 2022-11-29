@@ -13,10 +13,6 @@ use std::{io::stderr, thread, time::Duration};
 
 use tui::{
     backend::Backend,
-    layout::{Alignment, Constraint, Direction, Layout},
-    style::{Color, Style},
-    text::{Span, Spans},
-    widgets::{Block, Borders, List, ListItem, Paragraph},
     Frame,
 };
 

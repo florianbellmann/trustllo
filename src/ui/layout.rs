@@ -1,10 +1,8 @@
 use tui::{
-    backend::Backend,
     layout::{Alignment, Constraint, Direction, Layout},
     style::{Color, Style},
-    text::{Span, Spans},
-    widgets::{Block, Borders, List, ListItem, Paragraph},
-    Frame,
+    text::{Span},
+    widgets::{Block, Borders},
 };
 
 pub fn get_main_window() -> Block<'static> {
