@@ -64,13 +64,16 @@ impl Cli {
     }
 
     pub fn render(
+        &self,
         board_name: &str,
-        current_board_index: usize,
-        current_lists: Vec<&str>,
+        current_lists: Vec<&String>,
         current_list_index: usize,
-        current_cards: Vec<&str>,
+        current_cards: Vec<&String>,
         current_card_index: usize,
+
     ) {
+
+
         ...
         here i shuold build the ui and render it 
         only use the info that you need right now

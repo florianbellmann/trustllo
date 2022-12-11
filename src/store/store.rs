@@ -4,7 +4,7 @@ use std::fs::{self, File};
 use std::io::Read;
 
 use anyhow::Result;
-use log::info;
+use log::{error, info};
 
 use crate::{
     store::StoreData,
@@ -15,10 +15,10 @@ use crate::{
 // use crate::config::config_manager::ConfigManager;
 
 pub struct Store {
-    pub boards: Option<Vec<Board>>, // base data from file
-    pub current_board_index: Option<usize>,
-    pub current_lists: Option<Vec<List>>, // base data from file
-    pub current_list_index: Option<usize>,
+    pub boards: Vec<Board>, // base data from file
+    pub current_board_index: usize,
+    pub current_lists: Vec<List>, // base data from file
+    pub current_list_index: usize,
     pub current_cards: Option<Vec<Card>>, // base data that was fetched
     pub current_card_index: Option<usize>,
     pub last_card: Option<Card>, // can't be a reference, because it might be on the old list
@@ -32,12 +32,21 @@ impl Store {
     pub fn new(custom_path: Option<&str>) -> Store {
         let data_path = custom_path.unwrap_or(Store::DATA_PATH);
 
+        let store_data = match read_data_from_file(data_path) {
+            Ok(data) => data,
+            Err(e) => {
+                let error_msg = format!("ERROR: Failed to parse the Api response. {}", e);
+                error!("{}", error_msg);
+                create_empty_store_file(data_path).unwrap()
+            }
+        };
+
         Store {
             // TODO: missing is the multiple board support
-            boards: None,
-            current_board_index: None,
-            current_lists: None,
-            current_list_index: None,
+            boards: store_data.boards,
+            current_board_index: 0,
+            current_lists: store_data.lists,
+            current_list_index: 0,
             current_cards: None,
             current_card_index: None,
             last_card: None,
@@ -45,25 +54,25 @@ impl Store {
         }
     }
 
-    pub fn init_from_cache(&mut self) -> Result<()> {
-        let store_data = self.read_data_from_file()?;
+    pub fn refresh_from_cache(&mut self) -> Result<()> {
+        let store_data = read_data_from_file(&self.data_path)?;
 
-        self.boards = Some(store_data.boards);
-        self.current_lists = Some(store_data.lists);
-        self.current_board_index = Some(0);
-        self.current_list_index = Some(0);
+        self.boards = store_data.boards;
+        self.current_lists = store_data.lists;
+        self.current_board_index = 0;
+        self.current_list_index = 0;
 
         info!("Initialized store from cache.");
         Ok(())
     }
 
     pub fn nuke_all(&mut self) -> Result<()> {
-        self.remove_data_file()?;
+        remove_data_file(&self.data_path)?;
 
-        self.boards = None;
-        self.current_board_index = None;
-        self.current_lists = None;
-        self.current_list_index = None;
+        self.boards = vec![];
+        self.current_board_index = 0;
+        self.current_lists = vec![];
+        self.current_list_index = 0;
         self.current_cards = None;
         self.current_card_index = None;
         self.last_card = None;
@@ -75,9 +84,9 @@ impl Store {
     // boards
     // ----------------------------------------------------------------------------------------------------------------
     pub async fn set_boards(&mut self, boards: Vec<Board>) -> Result<()> {
-        self.boards = Some(boards.clone());
-        self.current_board_index = Some(0);
-        let lists = self.current_lists.clone().unwrap_or_default();
+        self.boards = boards.clone();
+        self.current_board_index = 0;
+        let lists = vec![];
         let store_date = StoreData {
             updated: "updated missing".to_string(),
             boards,
@@ -88,19 +97,16 @@ impl Store {
 
         Ok(fs::write(&self.data_path, new_boards_data_store_string)?)
     }
-    pub fn set_current_board_index(&mut self, index: usize) {
-        self.current_board_index = Some(index)
-    }
     pub fn get_current_board(&self) -> &Board {
-        &self.boards.as_ref().unwrap()[self.current_board_index.unwrap()]
+        &self.boards[self.current_board_index]
     }
 
     // lists
     // ----------------------------------------------------------------------------------------------------------------
     pub fn set_current_lists(&mut self, lists: Vec<List>) -> Result<()> {
-        self.current_lists = Some(lists.clone());
-        self.current_list_index = Some(0);
-        let boards = self.boards.clone().unwrap_or_default();
+        self.current_lists = lists.clone();
+        self.current_list_index = 0;
+        let boards = self.boards.clone();
         let store_date = StoreData {
             updated: "updated missing".to_string(),
             boards,
@@ -112,11 +118,8 @@ impl Store {
         Ok(fs::write(&self.data_path, new_lists_data_store_string)?)
     }
 
-    pub fn set_current_list_index(&mut self, index: usize) {
-        self.current_list_index = Some(index);
-    }
-    pub fn get_current_list(&self) -> &List {
-        &self.current_lists.as_ref().unwrap()[self.current_list_index.unwrap()]
+    pub fn get_current_list(&mut self) -> &List {
+        &self.current_lists[self.current_list_index]
     }
 
     // cards
@@ -128,51 +131,55 @@ impl Store {
     pub fn set_current_card_index(&mut self, index: usize) {
         self.current_card_index = Some(index);
     }
-    pub fn get_current_card(&self) -> &Card {
-        &self.current_cards.as_ref().unwrap()[self.current_card_index.unwrap()]
+    pub fn get_current_card(&self) -> Option<&Card> {
+        if !self.current_cards.is_none() && !self.current_card_index.is_none() {
+            return Some(&self.current_cards.as_ref().unwrap()[self.current_card_index.unwrap()]);
+        }
+        return None;
     }
     pub fn set_last_card(&mut self, card: &Card) {
         self.last_card = Some(card.clone());
     }
+}
 
-    // file system
-    // ----------------------------------------------------------------------------------------------------------------
-    fn read_data_from_file(&mut self) -> Result<StoreData> {
-        let mut file = File::open(&self.data_path).unwrap();
-        let mut file_contents = String::new();
-        file.read_to_string(&mut file_contents)?;
+// file system
+// ----------------------------------------------------------------------------------------------------------------
+fn read_data_from_file(data_path: &str) -> Result<StoreData> {
+    let mut file = File::open(data_path)?;
+    let mut file_contents = String::new();
+    file.read_to_string(&mut file_contents)?;
 
-        let store_data: StoreData = serde_json::from_str(&file_contents)?;
+    let store_data: StoreData = serde_json::from_str(&file_contents)?;
 
-        Ok(store_data)
-    }
+    Ok(store_data)
+}
 
-    fn create_empty_store_file(&self) -> Result<()> {
-        let empty_store_data: StoreData = StoreData {
-            updated: "missing date".to_string(), //TODO: not implemented yet
-            boards: vec![],
-            lists: vec![],
-        };
-        let empty_store_data_string = serde_json::to_string(&empty_store_data).unwrap();
+fn create_empty_store_file(data_path: &str) -> Result<StoreData> {
+    let empty_store_data: StoreData = StoreData {
+        updated: "missing date".to_string(), //TODO: not implemented yet
+        boards: vec![],
+        lists: vec![],
+    };
+    let empty_store_data_string = serde_json::to_string(&empty_store_data).unwrap();
 
-        info!(
-            "New StoreData with contents {} created.",
-            &empty_store_data_string
-        );
-        Ok(fs::write(&self.data_path, empty_store_data_string)?)
-    }
+    info!(
+        "New StoreData with contents {} created.",
+        &empty_store_data_string
+    );
+    fs::write(data_path, empty_store_data_string)?;
+    Ok(empty_store_data)
+}
 
-    fn write_data_to_file(&self, new_store_data: StoreData) -> Result<()> {
-        let new_store_data_string = serde_json::to_string(&new_store_data).unwrap();
-        info!("Updating store file.");
-        Ok(fs::write(&self.data_path, new_store_data_string)?)
-    }
+fn write_data_to_file(data_path: &str, new_store_data: StoreData) -> Result<()> {
+    let new_store_data_string = serde_json::to_string(&new_store_data).unwrap();
+    info!("Updating store file.");
+    Ok(fs::write(data_path, new_store_data_string)?)
+}
 
-    fn remove_data_file(&self) -> Result<()> {
-        info!("Removing store file.");
-        fs::remove_file(&self.data_path)?;
-        Ok(())
-    }
+fn remove_data_file(data_path: &str) -> Result<()> {
+    info!("Removing store file.");
+    fs::remove_file(data_path)?;
+    Ok(())
 }
 
 #[cfg(test)]
@@ -186,7 +193,7 @@ mod tests {
     use anyhow::Result;
 
     use crate::{
-        store::StoreData,
+        store::{store::create_empty_store_file, StoreData},
         trello::{Board, Card, List},
         utils::fake_data::FakeData,
     };
@@ -199,9 +206,9 @@ mod tests {
         let mut store = Store::new(Some(init_cache_data_store_path));
 
         // TODO: updated field is missing
-        assert_eq!(store.current_board_index.is_none(), true);
-        assert_eq!(store.current_lists.is_none(), true);
-        assert_eq!(store.current_list_index.is_none(), true);
+        assert_eq!(store.current_board_index, 0);
+        assert_eq!(store.current_lists.len(), 0);
+        assert_eq!(store.current_list_index, 0);
         assert_eq!(store.current_cards.is_none(), true);
         assert_eq!(store.current_card_index.is_none(), true);
         assert_eq!(store.last_card.is_none(), true);
@@ -210,13 +217,12 @@ mod tests {
         let fake_store_data_string = serde_json::to_string(&fake_store_data).unwrap();
         fs::write(init_cache_data_store_path, fake_store_data_string)?;
 
-        store.init_from_cache()?;
+        store.refresh_from_cache()?;
 
         // TODO: multiple board support still missing
-        assert_eq!(store.current_board_index.is_none(), false);
-        assert_eq!(store.current_lists.is_none(), false);
-        assert_eq!(store.current_list_index.is_none(), false);
-        assert_eq!(store.current_list_index.unwrap(), 0);
+        assert_eq!(store.current_board_index, 0);
+        assert_eq!(store.current_lists.len(), 0);
+        assert_eq!(store.current_list_index, 0);
         assert_eq!(store.current_cards.is_none(), true);
         assert_eq!(store.current_card_index.is_none(), true);
         assert_eq!(store.last_card.is_none(), true);
@@ -230,7 +236,7 @@ mod tests {
     async fn nuke_all_spec() -> Result<()> {
         let nuke_store_path = "/tmp/trustllo_nuke_data_store_path.json";
         let mut store = Store::new(Some(nuke_store_path));
-        store.create_empty_store_file()?;
+        create_empty_store_file(nuke_store_path)?;
 
         assert_eq!(true, Path::new(nuke_store_path).is_file());
         let mut file = File::open(nuke_store_path).unwrap();
@@ -242,9 +248,9 @@ mod tests {
 
         store.nuke_all()?;
         assert_eq!(false, Path::new(nuke_store_path).is_file());
-        assert!(store.current_board_index.is_none());
-        assert!(store.current_lists.is_none());
-        assert!(store.current_list_index.is_none());
+        assert_eq!(store.current_board_index, 0);
+        assert_eq!(store.current_lists.len(), 0);
+        assert_eq!(store.current_list_index, 0);
         assert!(store.current_cards.is_none());
         assert!(store.current_card_index.is_none());
         assert!(store.last_card.is_none());
@@ -257,7 +263,7 @@ mod tests {
         let set_boards_store_path = "/tmp/trustllo_set_boards_data_store_path.json";
         let mut store = Store::new(Some(set_boards_store_path));
 
-        store.create_empty_store_file()?;
+        create_empty_store_file(set_boards_store_path)?;
 
         assert_eq!(true, Path::new(set_boards_store_path).is_file());
 
@@ -266,9 +272,7 @@ mod tests {
         file.read_to_string(&mut file_contents)?;
         let store_data: StoreData = serde_json::from_str(&file_contents)?;
         assert_eq!(store_data.boards.len(), 0);
-
-        assert!(store.boards.is_none());
-        assert!(store.current_board_index.is_none());
+        assert_eq!(store.current_board_index, 0);
 
         let board1: Board = FakeData::get_fake_board();
         let board2: Board = FakeData::get_fake_board();
@@ -283,16 +287,16 @@ mod tests {
         ];
         store.set_boards(boards).await?;
 
-        assert_eq!(store.boards.as_ref().unwrap()[0].id, board1.id);
-        assert_eq!(store.boards.as_ref().unwrap()[0].name, board1.name);
-        assert_eq!(store.boards.as_ref().unwrap()[1].id, board2.id);
-        assert_eq!(store.boards.as_ref().unwrap()[1].name, board2.name);
-        assert_eq!(store.boards.as_ref().unwrap()[2].id, board3.id);
-        assert_eq!(store.boards.as_ref().unwrap()[2].name, board3.name);
-        assert_eq!(store.boards.as_ref().unwrap()[3].id, board4.id);
-        assert_eq!(store.boards.as_ref().unwrap()[3].name, board4.name);
-        assert_eq!(store.boards.as_ref().unwrap().len(), 4);
-        assert_eq!(store.current_board_index.unwrap(), 0);
+        assert_eq!(store.boards[0].id, board1.id);
+        assert_eq!(store.boards[0].name, board1.name);
+        assert_eq!(store.boards[1].id, board2.id);
+        assert_eq!(store.boards[1].name, board2.name);
+        assert_eq!(store.boards[2].id, board3.id);
+        assert_eq!(store.boards[2].name, board3.name);
+        assert_eq!(store.boards[3].id, board4.id);
+        assert_eq!(store.boards[3].name, board4.name);
+        assert_eq!(store.boards.len(), 4);
+        assert_eq!(store.current_board_index, 0);
 
         let mut file = File::open(set_boards_store_path).unwrap();
         let mut file_contents = String::new();
@@ -307,7 +311,7 @@ mod tests {
         assert_eq!(store_data_from_file.boards[3].id, board4.id);
         assert_eq!(store_data_from_file.boards[3].name, board4.name);
         assert_eq!(store_data_from_file.boards.len(), 4);
-        assert_eq!(store.current_board_index.unwrap(), 0);
+        assert_eq!(store.current_board_index, 0);
 
         let board5: Board = FakeData::get_fake_board();
         let board6: Board = FakeData::get_fake_board();
@@ -316,14 +320,14 @@ mod tests {
         let boards = vec![board5.clone(), board6.clone(), board7.clone()];
         store.set_boards(boards).await?;
 
-        assert_eq!(store.boards.as_ref().unwrap()[0].id, board5.id);
-        assert_eq!(store.boards.as_ref().unwrap()[0].name, board5.name);
-        assert_eq!(store.boards.as_ref().unwrap()[1].id, board6.id);
-        assert_eq!(store.boards.as_ref().unwrap()[1].name, board6.name);
-        assert_eq!(store.boards.as_ref().unwrap()[2].id, board7.id);
-        assert_eq!(store.boards.as_ref().unwrap()[2].name, board7.name);
-        assert_eq!(store.boards.as_ref().unwrap().len(), 3);
-        assert_eq!(store.current_board_index.unwrap(), 0);
+        assert_eq!(store.boards[0].id, board5.id);
+        assert_eq!(store.boards[0].name, board5.name);
+        assert_eq!(store.boards[1].id, board6.id);
+        assert_eq!(store.boards[1].name, board6.name);
+        assert_eq!(store.boards[2].id, board7.id);
+        assert_eq!(store.boards[2].name, board7.name);
+        assert_eq!(store.boards.len(), 3);
+        assert_eq!(store.current_board_index, 0);
 
         let mut file = File::open(set_boards_store_path).unwrap();
         let mut file_contents = String::new();
@@ -336,7 +340,7 @@ mod tests {
         assert_eq!(store_data_from_file2.boards[2].id, board7.id);
         assert_eq!(store_data_from_file2.boards[2].name, board7.name);
         assert_eq!(store_data_from_file2.boards.len(), 3);
-        assert_eq!(store.current_board_index.unwrap(), 0);
+        assert_eq!(store.current_board_index, 0);
 
         fs::remove_file(set_boards_store_path)?;
         assert_eq!(false, Path::new(set_boards_store_path).is_file());
@@ -347,16 +351,16 @@ mod tests {
     fn set_current_board_index_spec() {
         let set_current_board_store_path = "/tmp/trustllo_set_current_board_data_store_path.json";
         let mut store = Store::new(Some(set_current_board_store_path));
-        assert!(store.current_board_index.is_none());
+        assert_eq!(store.current_board_index, 0);
 
-        store.set_current_board_index(0);
-        assert_eq!(store.current_board_index.unwrap(), 0);
-        store.set_current_board_index(1);
-        assert_eq!(store.current_board_index.unwrap(), 1);
-        store.set_current_board_index(99);
-        assert_eq!(store.current_board_index.unwrap(), 99);
-        store.set_current_board_index(usize::MAX);
-        assert_eq!(store.current_board_index.unwrap(), usize::MAX);
+        store.current_board_index = 0;
+        assert_eq!(store.current_board_index, 0);
+        store.current_board_index = 1;
+        assert_eq!(store.current_board_index, 1);
+        store.current_board_index = 99;
+        assert_eq!(store.current_board_index, 99);
+        store.current_board_index = usize::MAX;
+        assert_eq!(store.current_board_index, usize::MAX);
 
         assert_eq!(false, Path::new(set_current_board_store_path).is_file());
     }
@@ -366,7 +370,7 @@ mod tests {
         let set_current_lists_store_path = "/tmp/trustllo_set_current_lists_data_store_path.json";
         let mut store = Store::new(Some(set_current_lists_store_path));
 
-        store.create_empty_store_file()?;
+        create_empty_store_file(set_current_lists_store_path)?;
 
         assert_eq!(true, Path::new(set_current_lists_store_path).is_file());
 
@@ -375,9 +379,8 @@ mod tests {
         file.read_to_string(&mut file_contents)?;
         let store_data: StoreData = serde_json::from_str(&file_contents)?;
         assert_eq!(store_data.lists.len(), 0);
-
-        assert!(store.current_lists.is_none());
-        assert!(store.current_list_index.is_none());
+        assert_eq!(store.current_lists.len(), 0);
+        assert_eq!(store.current_list_index, 0);
 
         let list1: List = FakeData::get_fake_list();
         let list2: List = FakeData::get_fake_list();
@@ -387,16 +390,16 @@ mod tests {
         let lists = vec![list1.clone(), list2.clone(), list3.clone(), list4.clone()];
         store.set_current_lists(lists)?;
 
-        assert_eq!(store.current_lists.as_ref().unwrap()[0].id, list1.id);
-        assert_eq!(store.current_lists.as_ref().unwrap()[0].name, list1.name);
-        assert_eq!(store.current_lists.as_ref().unwrap()[1].id, list2.id);
-        assert_eq!(store.current_lists.as_ref().unwrap()[1].name, list2.name);
-        assert_eq!(store.current_lists.as_ref().unwrap()[2].id, list3.id);
-        assert_eq!(store.current_lists.as_ref().unwrap()[2].name, list3.name);
-        assert_eq!(store.current_lists.as_ref().unwrap()[3].id, list4.id);
-        assert_eq!(store.current_lists.as_ref().unwrap()[3].name, list4.name);
-        assert_eq!(store.current_lists.as_ref().unwrap().len(), 4);
-        assert_eq!(store.current_list_index.unwrap(), 0);
+        assert_eq!(store.current_lists[0].id, list1.id);
+        assert_eq!(store.current_lists[0].name, list1.name);
+        assert_eq!(store.current_lists[1].id, list2.id);
+        assert_eq!(store.current_lists[1].name, list2.name);
+        assert_eq!(store.current_lists[2].id, list3.id);
+        assert_eq!(store.current_lists[2].name, list3.name);
+        assert_eq!(store.current_lists[3].id, list4.id);
+        assert_eq!(store.current_lists[3].name, list4.name);
+        assert_eq!(store.current_lists.len(), 4);
+        assert_eq!(store.current_list_index, 0);
 
         let mut file = File::open(set_current_lists_store_path).unwrap();
         let mut file_contents = String::new();
@@ -411,7 +414,7 @@ mod tests {
         assert_eq!(store_data_from_file.lists[3].id, list4.id);
         assert_eq!(store_data_from_file.lists[3].name, list4.name);
         assert_eq!(store_data_from_file.lists.len(), 4);
-        assert_eq!(store.current_list_index.unwrap(), 0);
+        assert_eq!(store.current_list_index, 0);
 
         let list5: List = FakeData::get_fake_list();
         let list6: List = FakeData::get_fake_list();
@@ -420,14 +423,14 @@ mod tests {
         let lists = vec![list5.clone(), list6.clone(), list7.clone()];
         store.set_current_lists(lists)?;
 
-        assert_eq!(store.current_lists.as_ref().unwrap()[0].id, list5.id);
-        assert_eq!(store.current_lists.as_ref().unwrap()[0].name, list5.name);
-        assert_eq!(store.current_lists.as_ref().unwrap()[1].id, list6.id);
-        assert_eq!(store.current_lists.as_ref().unwrap()[1].name, list6.name);
-        assert_eq!(store.current_lists.as_ref().unwrap()[2].id, list7.id);
-        assert_eq!(store.current_lists.as_ref().unwrap()[2].name, list7.name);
-        assert_eq!(store.current_lists.as_ref().unwrap().len(), 3);
-        assert_eq!(store.current_list_index.unwrap(), 0);
+        assert_eq!(store.current_lists[0].id, list5.id);
+        assert_eq!(store.current_lists[0].name, list5.name);
+        assert_eq!(store.current_lists[1].id, list6.id);
+        assert_eq!(store.current_lists[1].name, list6.name);
+        assert_eq!(store.current_lists[2].id, list7.id);
+        assert_eq!(store.current_lists[2].name, list7.name);
+        assert_eq!(store.current_lists.len(), 3);
+        assert_eq!(store.current_list_index, 0);
 
         let mut file = File::open(set_current_lists_store_path).unwrap();
         let mut file_contents = String::new();
@@ -440,7 +443,7 @@ mod tests {
         assert_eq!(store_data_from_file2.lists[2].id, list7.id);
         assert_eq!(store_data_from_file2.lists[2].name, list7.name);
         assert_eq!(store_data_from_file2.lists.len(), 3);
-        assert_eq!(store.current_list_index.unwrap(), 0);
+        assert_eq!(store.current_list_index, 0);
 
         fs::remove_file(set_current_lists_store_path)?;
         assert_eq!(false, Path::new(set_current_lists_store_path).is_file());
@@ -456,9 +459,9 @@ mod tests {
         let list2: List = FakeData::get_fake_list();
         let lists = vec![list1, list2];
 
-        assert!(store.current_list_index.is_none());
+        assert_eq!(store.current_list_index, 0);
         store.set_current_lists(lists)?;
-        assert!(store.current_list_index.is_some());
+        assert_eq!(store.current_list_index, 0);
 
         store.set_current_list_index(0);
         assert_eq!(store.current_list_index.unwrap(), 0);

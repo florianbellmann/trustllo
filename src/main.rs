@@ -13,7 +13,7 @@ mod utils;
 async fn main() {
     Logger::init();
 
-    let application_service = ApplicationService::new();
+    let mut application_service = ApplicationService::new();
 
     application_service.init().await;
 
