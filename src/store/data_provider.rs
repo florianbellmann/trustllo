@@ -40,6 +40,7 @@ impl DataProvider {
             match self.api_connector.get_boards().await {
                 Ok(boards) => {
                     self.store.boards = boards;
+                    self.store.current_board_index = 0;
                 }
                 Err(e) => error!("Error while loading boards from api: {}", e),
             }
@@ -62,7 +63,8 @@ impl DataProvider {
     pub async fn set_boards(&mut self, boards: Vec<Board>) -> Result<()> {
         self.store.set_boards(boards).await
     }
-    // listscards
+
+    // lists
     // --------------------------------------------------------------------------------------------
     pub async fn get_current_lists(&mut self) -> &Vec<List> {
         if let 0 = self.store.current_lists.len() {
@@ -71,10 +73,10 @@ impl DataProvider {
                 .api_connector
                 .get_lists_on_board(self.store.get_current_board().id.as_str())
                 .await
-                // TODO: this does not reset the index yet
             {
                 Ok(lists) => {
                     self.store.current_lists = lists;
+                    self.store.current_list_index = 0;
                 }
                 Err(e) => error!("Error while loading lists from api: {}", e),
             }
@@ -87,35 +89,59 @@ impl DataProvider {
         }
         self.store.current_list_index
     }
-    pub async fn get_current_list(&mut self, lists: Vec<List>) -> &List {
+    pub async fn get_current_list(&mut self) -> &List {
         if let 0 = self.store.current_lists.len() {
             self.get_current_lists().await;
         }
-        todo!();
-        // self.store.get_current_list()
-        // self.store.current_lists[self.get_current_list_index()]
+        self.store.get_current_list()
     }
     pub async fn get_lists_on_board(&self, board_id: &str) -> Vec<List> {
-        todo!("not implemented");
+        match self.api_connector.get_lists_on_board(board_id).await {
+            Ok(lists) => lists,
+            Err(e) => {
+                error!("Error while loading lists from api: {}", e);
+                vec![]
+            }
+        }
     }
 
     pub async fn set_current_lists(&mut self, lists: Vec<List>) -> Result<()> {
-        todo!("not implemented");
+        self.store.set_current_lists(lists)
     }
 
     // cards
     // --------------------------------------------------------------------------------------------
-    pub async fn get_current_cards() -> Vec<Card> {
-        todo!("not implemented");
+    pub async fn get_current_cards(&mut self) -> &Vec<Card> {
+        todo!();
+        // if self.store.current_cards.is_none()
+        //     || self.store.current_cards.as_ref().unwrap().is_empty()
+        // {
+        //     warn!("No cards found in store. Loading from api.");
+        //     // let id = self.get_current_list().await.id.as_str();
+        //     match self.api_connector.get_cards_on_list("2").await {
+        //         Ok(cards) => {
+        //             self.store.current_cards = Some(cards);
+        //             self.store.current_card_index = Some(0);
+        //         }
+        //         Err(e) => error!("Error while loading cards from api: {}", e),
+        //     }
+        // }
+
+        // self.store.current_cards.unwrap().as_ref()
     }
     pub async fn get_current_card_index() -> usize {
         todo!("not implemented");
     }
-    pub async fn get_current_card() -> Card {
-        todo!("not implemented");
+    pub async fn get_current_card(&mut self) -> &Card {
+        if self.store.current_cards.is_none()
+            || self.store.current_cards.as_ref().unwrap().is_empty()
+        {
+            self.get_current_cards().await;
+        }
+        self.store.get_current_card().unwrap()
     }
-    pub async fn get_last_card() -> Option<Card> {
-        todo!("not implemented");
+    pub async fn get_last_card(&self) -> Option<&Card> {
+        self.store.last_card.as_ref()
     }
     pub async fn get_cards_on_list(&self, list_id: &str) -> Result<Vec<Card>> {
         todo!("not implemented");
