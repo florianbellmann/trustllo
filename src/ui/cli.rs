@@ -74,10 +74,10 @@ impl Cli {
     ) {
 
 
-        ...
-        here i shuold build the ui and render it 
-        only use the info that you need right now
-        best case also as a reference
+        // ...
+        // here i shuold build the ui and render it 
+        // only use the info that you need right now
+        // best case also as a reference
     }
 
     fn build_ui<B: Backend>(f: &mut Frame<B>) {
