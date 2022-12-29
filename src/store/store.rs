@@ -132,10 +132,10 @@ impl Store {
         self.current_card_index = Some(index);
     }
     pub fn get_current_card(&self) -> Option<&Card> {
-        if !self.current_cards.is_none() && !self.current_card_index.is_none() {
+        if self.current_cards.is_some() && self.current_card_index.is_some() {
             return Some(&self.current_cards.as_ref().unwrap()[self.current_card_index.unwrap()]);
         }
-        return None;
+        None
     }
     pub fn set_last_card(&mut self, card: &Card) {
         self.last_card = Some(card.clone());

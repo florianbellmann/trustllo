@@ -83,7 +83,7 @@ impl ApiConnector {
         Ok(cards)
     }
 
-    pub async fn get_card(&self, card_id: &str) -> Result<Card> {
+    pub async fn get_card_by_id(&self, card_id: &str) -> Result<Card> {
         info!("Getting card {} from API.", card_id);
         let card: Card = self
             .make_request(Endpoint::CARDS, Method::GET, format!("/{}", card_id), None)
@@ -280,7 +280,7 @@ mod tests {
         // get a specific card on a board
         let api_connector = ApiConnector::new();
         let card_id = std::env::var("CARD_ID").unwrap().to_owned();
-        let card = api_connector.get_card(&card_id).await?;
+        let card = api_connector.get_card_by_id(&card_id).await?;
 
         assert_eq!(get_type_of(&card), "trustllo::trello::Card");
         assert!(!card.id.is_empty());

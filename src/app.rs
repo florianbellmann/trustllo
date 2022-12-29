@@ -3,8 +3,7 @@ use crossterm::event::{self, Event, KeyCode};
 use log::debug;
 
 use crate::{
-    config::config_manager::ConfigManager, store::{store::Store, data_provider::DataProvider},
-    trello::api_connector::ApiConnector, ui::cli::Cli,
+    config::config_manager::ConfigManager, store::{data_provider::DataProvider}, ui::cli::Cli,
 };
 
 pub struct ApplicationService {
