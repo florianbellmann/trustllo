@@ -118,6 +118,9 @@ impl Store {
         Ok(fs::write(&self.data_path, new_lists_data_store_string)?)
     }
 
+    pub fn set_current_list_index(&mut self, index: usize) {
+        self.current_list_index = index;
+    }
     pub fn get_current_list(&mut self) -> &List {
         &self.current_lists[self.current_list_index]
     }
@@ -464,13 +467,13 @@ mod tests {
         assert_eq!(store.current_list_index, 0);
 
         store.set_current_list_index(0);
-        assert_eq!(store.current_list_index.unwrap(), 0);
+        assert_eq!(store.current_list_index, 0);
         store.set_current_list_index(1);
-        assert_eq!(store.current_list_index.unwrap(), 1);
+        assert_eq!(store.current_list_index, 1);
         store.set_current_list_index(99);
-        assert_eq!(store.current_list_index.unwrap(), 99);
+        assert_eq!(store.current_list_index, 99);
         store.set_current_list_index(usize::MAX);
-        assert_eq!(store.current_list_index.unwrap(), usize::MAX);
+        assert_eq!(store.current_list_index, usize::MAX);
 
         assert_eq!(true, Path::new(set_current_lists_store_path).is_file());
         fs::remove_file(set_current_lists_store_path)?;
