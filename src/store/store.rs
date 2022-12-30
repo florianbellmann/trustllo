@@ -229,7 +229,7 @@ mod tests {
 
         // TODO: multiple board support still missing
         assert_eq!(store.current_board_index, 0);
-        assert_eq!(store.current_lists.len(), 0);
+        assert_eq!(store.current_lists.len(), 4);
         assert_eq!(store.current_list_index, 0);
         assert_eq!(store.current_cards.is_none(), true);
         assert_eq!(store.current_card_index.is_none(), true);
@@ -370,6 +370,7 @@ mod tests {
         store.current_board_index = usize::MAX;
         assert_eq!(store.current_board_index, usize::MAX);
 
+        fs::remove_file(set_current_board_store_path);
         assert_eq!(false, Path::new(set_current_board_store_path).is_file());
     }
 
@@ -531,6 +532,7 @@ mod tests {
         assert_eq!(store.current_cards.as_ref().unwrap().len(), 3);
         assert_eq!(store.current_card_index.unwrap(), 0);
 
+        fs::remove_file(set_current_cards_data_store_path);
         assert_eq!(
             false,
             Path::new(set_current_cards_data_store_path).is_file()
@@ -553,6 +555,7 @@ mod tests {
         store.set_current_card_index(usize::MAX);
         assert_eq!(store.current_card_index.unwrap(), usize::MAX);
 
+        fs::remove_file(set_current_card_data_store_path);
         assert_eq!(false, Path::new(set_current_card_data_store_path).is_file());
     }
 
@@ -574,6 +577,7 @@ mod tests {
         assert_eq!(store.last_card.as_ref().unwrap().id, card2.id);
         assert_eq!(store.last_card.as_ref().unwrap().name, card2.name);
 
+        fs::remove_file(set_last_card_data_store_path);
         assert_eq!(false, Path::new(set_last_card_data_store_path).is_file());
     }
 
