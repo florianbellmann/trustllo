@@ -17,7 +17,7 @@ async fn main() {
 
     application_service.init().await;
 
-    application_service.run_app_loop();
+    application_service.run_app_loop().await;
 
     application_service.teardown();
 }

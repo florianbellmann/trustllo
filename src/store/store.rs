@@ -14,7 +14,6 @@ use crate::{
 // TODO: unclear if I want to store data next to config?
 // use crate::config::config_manager::ConfigManager;
 
-
 pub struct Store {
     pub boards: Vec<Board>, // base data from file
     pub current_board_index: usize,
@@ -88,13 +87,13 @@ impl Store {
         self.boards = boards.clone();
         self.current_board_index = 0;
         let lists = vec![];
-        let store_date = StoreData {
+        let store_data = StoreData {
             updated: "updated missing".to_string(),
             boards,
             lists,
         };
 
-        let new_boards_data_store_string = serde_json::to_string(&store_date).unwrap();
+        let new_boards_data_store_string = serde_json::to_string(&store_data).unwrap();
 
         Ok(fs::write(&self.data_path, new_boards_data_store_string)?)
     }
@@ -128,7 +127,7 @@ impl Store {
 
     // cards
     // ----------------------------------------------------------------------------------------------------------------
-    pub fn set_current_cards(&mut self, cards: &Vec<Card>) {
+    pub fn set_current_cards(&mut self, cards: Vec<Card>) {
         self.current_cards = Some(cards.clone());
         self.current_card_index = Some(0);
     }

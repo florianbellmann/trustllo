@@ -39,8 +39,7 @@ impl DataProvider {
             warn!("No boards found in store. Loading from API.");
             match self.api_connector.get_boards().await {
                 Ok(boards) => {
-                    self.store.boards = boards;
-                    self.store.current_board_index = 0;
+                    self.store.set_boards(boards);
                 }
                 Err(e) => error!("Error while loading boards from API: {}", e),
             }
@@ -77,8 +76,7 @@ impl DataProvider {
                 .await
             {
                 Ok(lists) => {
-                    self.store.current_lists = lists;
-                    self.store.current_list_index = 0;
+                    self.store.set_current_lists(lists);
                 }
                 Err(e) => error!("Error while loading lists from API: {}", e),
             }
@@ -122,8 +120,7 @@ impl DataProvider {
             // let id = self.get_current_list().await.id.as_str();
             match self.api_connector.get_cards_on_list("2").await {
                 Ok(cards) => {
-                    self.store.current_cards = Some(cards);
-                    self.store.current_card_index = Some(0);
+                    self.store.set_current_cards(cards);
                 }
                 Err(e) => error!("Error while loading cards from API: {}", e),
             }
@@ -189,7 +186,7 @@ impl DataProvider {
     pub async fn set_current_card_index(&mut self, index: usize) {
         self.store.set_current_card_index(index)
     }
-    pub async fn set_current_cards(&mut self, cards: &Vec<Card>) {
+    pub async fn set_current_cards(&mut self, cards: Vec<Card>) {
         self.store.set_current_cards(cards)
     }
     pub async fn set_last_card(&mut self, card: &Card) {

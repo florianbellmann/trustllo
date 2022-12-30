@@ -7,23 +7,20 @@ use crossterm::{
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
 use std::io;
-use tui::{backend::CrosstermBackend, Terminal};
+use tui::{
+    backend::CrosstermBackend,
+    widgets::{List, ListState},
+    Terminal,
+};
 
 use std::{io::stderr, thread, time::Duration};
 
-use tui::{
-    backend::Backend,
-    layout::{Alignment, Constraint, Direction, Layout},
-    style::{Color, Style},
-    text::{Span, Spans},
-    widgets::{Block, Borders, List, ListItem, Paragraph},
-    Frame,
-};
+use tui::{backend::Backend, Frame};
 
 use super::layout::{
     get_board_header, get_card_detail, get_card_detail_checklist, get_card_detail_description,
     get_card_detail_layout, get_card_detail_title, get_left_pane_layout, get_list, get_lists,
-    get_lists_layout, get_main_layout, get_main_window, get_right_pane_layout,
+    get_lists_layout, get_main_layout, get_right_pane_layout,
 };
 
 pub struct Cli {
@@ -58,29 +55,27 @@ impl Cli {
         let _ = self.terminal.show_cursor();
     }
 
-    pub fn draw(&mut self) -> Result<()> {
-        self.terminal.draw(|f| Self::build_ui(f))?;
+    // pub fn draw(&mut self) -> Result<()> {
+    //     self.terminal.draw(|f| Self::build_ui(f))?;
+    //     Ok(())
+    // }
+
+    pub fn render(
+        &mut self,
+        _board_name: String,
+        _current_lists: Vec<String>,
+        _current_list_index: usize,
+        current_cards: Vec<String>,
+        _current_card_index: usize,
+    ) -> Result<()> {
+        let mut list1: List = get_list(current_cards);
+
+        self.terminal.draw(|f| Self::build_ui(f, &list1))?;
+
         Ok(())
     }
 
-    pub fn render(
-        &self,
-        board_name: &str,
-        current_lists: Vec<&String>,
-        current_list_index: usize,
-        current_cards: Vec<&String>,
-        current_card_index: usize,
-
-    ) {
-
-
-        // ...
-        // here i shuold build the ui and render it 
-        // only use the info that you need right now
-        // best case also as a reference
-    }
-
-    fn build_ui<B: Backend>(f: &mut Frame<B>) {
+    fn build_ui<B: Backend>(f: &mut Frame<B>, list1: &List) {
         let size = f.size();
 
         // INFO: removed main window for now
@@ -91,6 +86,7 @@ impl Cli {
         let left_pane_layout = get_left_pane_layout().split(main_layout[0]);
         let right_pane_layout = get_right_pane_layout().split(main_layout[1]);
 
+        //TODO: Boards as tabs at the top
         let board_header = get_board_header();
         f.render_widget(board_header, left_pane_layout[0]);
 
@@ -106,13 +102,15 @@ impl Cli {
 
         let lists = get_lists();
         let lists_layout = get_lists_layout().split(right_pane_layout[0]);
-        let list1 = get_list();
-        let list2 = get_list();
-        let list3 = get_list();
+        // let list1 = get_list();
+        // let list2 = get_list();
+        // let list3 = get_list();
         f.render_widget(lists, main_layout[1]);
-        f.render_widget(list1, lists_layout[0]);
-        f.render_widget(list2, lists_layout[1]);
-        f.render_widget(list3, lists_layout[2]);
+        let mut state = ListState::default();
+        state.select(Some(1));
+        f.render_stateful_widget(list1.clone(), lists_layout[0], &mut state);
+        // f.render_widget(list2, lists_layout[1]);
+        // f.render_widget(list3, lists_layout[2]);
     }
 
     pub fn read_config_from_user_input(&self) -> (String, String, String) {

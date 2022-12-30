@@ -11,6 +11,8 @@ use log4rs::{
     Config,
 };
 
+// TODO: the panics are only logged to the console not the file
+//TODO: use tui logger or env logger instead
 pub struct Logger {}
 impl Logger {
     pub fn init() {

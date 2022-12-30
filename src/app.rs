@@ -1,6 +1,6 @@
 use anyhow::Result;
 use crossterm::event::{self, Event, KeyCode};
-use log::debug;
+use log::{debug, info};
 
 use crate::{
     config::config_manager::ConfigManager, store::data_provider::DataProvider, ui::cli::Cli,
@@ -75,22 +75,21 @@ impl ApplicationService {
         // TODO: actually build the app loop
         let mut cli = Cli::new(); // TODO: remove this cli instance
 
-        // get data
-        let current_board = self.data_provider.get_current_board().await;
-        let current_lists = self.data_provider.get_current_lists().await;
-        let current_list_index = self.data_provider.get_current_list_index().await;
-        let current_cards = self.data_provider.get_current_cards().await;
-        let current_card_index = self.data_provider.get_current_card_index().await;
-
         loop {
-            cli.draw();
-            cli.render(
-                &current_board.name,
-                current_lists.iter().map(|l| &l.name).collect(),
-                current_list_index,
-                current_cards.iter().map(|c| &c.name).collect(),
-                current_card_index,
-            );
+            // get data
+            let current_board = self.data_provider.get_current_board().await;
+            // let current_lists = self.data_provider.get_current_lists().await;
+            // let current_list_index = self.data_provider.get_current_list_index().await;
+            // let current_cards = self.data_provider.get_current_cards().await;
+            // let current_card_index = self.data_provider.get_current_card_index().await;
+            // // cli.draw();
+            // cli.render(
+            //     current_board.name,
+            //     current_lists.into_iter().map(|l| l.name).collect(),
+            //     current_list_index,
+            //     current_cards.into_iter().map(|c| c.name).collect(),
+            //     current_card_index,
+            // );
 
             if let Event::Key(key) = event::read()? {
                 if let KeyCode::Char('q') = key.code {

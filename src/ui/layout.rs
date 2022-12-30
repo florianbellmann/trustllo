@@ -1,8 +1,8 @@
 use tui::{
     layout::{Alignment, Constraint, Direction, Layout},
-    style::{Color, Style},
-    text::Span,
-    widgets::{Block, Borders},
+    style::{Color, Modifier, Style},
+    text::{Span, Spans, Text},
+    widgets::{Block, Borders, List, ListItem},
 };
 
 pub fn get_main_window() -> Block<'static> {
@@ -86,6 +86,19 @@ pub fn get_lists_layout() -> Layout {
         )
 }
 
-pub fn get_list() -> Block<'static> {
-    Block::default().title("List 1").borders(Borders::ALL)
+pub fn get_list(card_names: Vec<String>) -> List<'static> {
+    let list_items: Vec<ListItem> = card_names
+        .into_iter()
+        .map(|card_name| ListItem::new(card_name).style(Style::default().fg(Color::White)))
+        .collect();
+
+    // Create a List from all list items and highlight the currently selected one
+    List::new(list_items)
+        .block(Block::default().borders(Borders::ALL).title("List"))
+        .highlight_style(
+            Style::default()
+                .bg(Color::LightGreen)
+                .add_modifier(Modifier::BOLD),
+        )
+        .highlight_symbol(">> ")
 }
