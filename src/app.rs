@@ -1,6 +1,6 @@
 use anyhow::Result;
 use crossterm::event::{self, Event, KeyCode};
-use log::{debug, info};
+use log::{debug};
 
 use crate::{
     config::config_manager::ConfigManager, store::data_provider::DataProvider, ui::cli::Cli,
@@ -73,11 +73,11 @@ impl ApplicationService {
     pub async fn run_app_loop(&mut self) -> Result<()> {
         debug!("Starting app loop.");
         // TODO: actually build the app loop
-        let mut cli = Cli::new(); // TODO: remove this cli instance
+        let _cli = Cli::new(); // TODO: remove this cli instance
 
         loop {
             // get data
-            let current_board = self.data_provider.get_current_board().await;
+            let _current_board = self.data_provider.get_current_board().await;
             // let current_lists = self.data_provider.get_current_lists().await;
             // let current_list_index = self.data_provider.get_current_list_index().await;
             // let current_cards = self.data_provider.get_current_cards().await;

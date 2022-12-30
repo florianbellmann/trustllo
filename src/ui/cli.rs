@@ -68,7 +68,7 @@ impl Cli {
         current_cards: Vec<String>,
         _current_card_index: usize,
     ) -> Result<()> {
-        let mut list1: List = get_list(current_cards);
+        let list1: List = get_list(current_cards);
 
         self.terminal.draw(|f| Self::build_ui(f, &list1))?;
 

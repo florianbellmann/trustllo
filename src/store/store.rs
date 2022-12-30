@@ -128,7 +128,7 @@ impl Store {
     // cards
     // ----------------------------------------------------------------------------------------------------------------
     pub fn set_current_cards(&mut self, cards: Vec<Card>) {
-        self.current_cards = Some(cards.clone());
+        self.current_cards = Some(cards);
         self.current_card_index = Some(0);
     }
     pub fn set_current_card_index(&mut self, index: usize) {
