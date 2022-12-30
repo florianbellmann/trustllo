@@ -580,7 +580,7 @@ mod tests {
     #[tokio::test]
     async fn read_data_from_file_spec() -> Result<()> {
         let read_data_store_path = "/tmp/trustllo_read_data_store_path.json";
-        let mut store = Store::new(Some(read_data_store_path));
+        let store = Store::new(Some(read_data_store_path));
 
         let fake_store_data = FakeData::get_fake_store_data();
         let fake_store_data_string = serde_json::to_string(&fake_store_data).unwrap();
@@ -717,7 +717,7 @@ mod tests {
     #[tokio::test]
     async fn remove_data_file_spec() -> Result<()> {
         let remove_data_store_path = "/tmp/trustllo_remove_data_store_path.json";
-        let store = Store::new(Some(remove_data_store_path));
+        let _store = Store::new(Some(remove_data_store_path));
 
         let fake_store_data = FakeData::get_fake_store_data();
         let fake_store_data_string = serde_json::to_string(&fake_store_data).unwrap();
