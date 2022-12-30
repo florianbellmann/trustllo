@@ -196,7 +196,12 @@ mod tests {
     use anyhow::Result;
 
     use crate::{
-        store::{store::create_empty_store_file, StoreData},
+        store::{
+            store::{
+                create_empty_store_file, read_data_from_file, remove_data_file, write_data_to_file,
+            },
+            StoreData,
+        },
         trello::{Board, Card, List},
         utils::fake_data::FakeData,
     };
@@ -582,19 +587,19 @@ mod tests {
         fs::write(read_data_store_path, fake_store_data_string)?;
         assert_eq!(true, Path::new(read_data_store_path).is_file());
 
-        let store_data: StoreData = store.read_data_from_file()?;
+        let store_data: StoreData = read_data_from_file(read_data_store_path)?;
         assert_eq!(store_data.boards.len(), fake_store_data.boards.len());
         assert_eq!(
             store_data.boards.first().unwrap().id,
             fake_store_data.boards.first().unwrap().id
         );
-        assert!(store.current_board_index.is_none());
+        assert_eq!(store.current_board_index, 0);
         assert_eq!(store_data.lists.len(), fake_store_data.lists.len());
         assert_eq!(
             store_data.lists.first().unwrap().id,
             fake_store_data.lists.first().unwrap().id
         );
-        assert!(store.current_list_index.is_none());
+        assert_eq!(store.current_board_index, 0);
         assert_eq!(store_data.updated, fake_store_data.updated);
         assert!(store.current_cards.is_none());
         assert!(store.current_card_index.is_none());
@@ -609,7 +614,7 @@ mod tests {
         let empty_data_store_path = "/tmp/trustllo_empty_data_store_path.json";
         let store = Store::new(Some(empty_data_store_path));
 
-        store.create_empty_store_file()?;
+        create_empty_store_file(empty_data_store_path)?;
 
         assert_eq!(true, Path::new(empty_data_store_path).is_file());
 
@@ -620,9 +625,9 @@ mod tests {
         let store_data: StoreData = serde_json::from_str(&file_contents)?;
         assert_eq!(store_data.updated, "missing date");
         assert_eq!(store_data.boards.len(), 0);
-        assert!(store.current_board_index.is_none());
+        assert_eq!(store.current_board_index, 0);
         assert_eq!(store_data.lists.len(), 0);
-        assert!(store.current_list_index.is_none());
+        assert_eq!(store.current_board_index, 0);
         assert!(store.current_cards.is_none());
         assert!(store.current_card_index.is_none());
 
@@ -639,7 +644,7 @@ mod tests {
 
         let fake_store_data = FakeData::get_fake_store_data();
 
-        store.write_data_to_file(fake_store_data.clone())?;
+        write_data_to_file(write_data_store_path, fake_store_data.clone())?;
 
         assert_eq!(true, Path::new(write_data_store_path).is_file());
 
@@ -656,7 +661,7 @@ mod tests {
             store_data_from_file.boards.first().unwrap().id,
             fake_store_data.boards.first().unwrap().id
         );
-        assert!(store.current_board_index.is_none());
+        assert_eq!(store.current_board_index, 0);
         assert_eq!(
             store_data_from_file.lists.len(),
             fake_store_data.lists.len()
@@ -665,7 +670,7 @@ mod tests {
             store_data_from_file.lists.first().unwrap().id,
             fake_store_data.lists.first().unwrap().id
         );
-        assert!(store.current_list_index.is_none());
+        assert_eq!(store.current_board_index, 0);
         assert_eq!(store_data_from_file.updated, fake_store_data.updated);
         assert!(store.current_cards.is_none());
         assert!(store.current_card_index.is_none());
@@ -673,7 +678,7 @@ mod tests {
         let fake_store_data2 = FakeData::get_fake_store_data();
 
         assert_eq!(true, Path::new(write_data_store_path).is_file());
-        store.write_data_to_file(fake_store_data2.clone())?;
+        write_data_to_file(write_data_store_path, fake_store_data2.clone())?;
 
         assert_eq!(true, Path::new(write_data_store_path).is_file());
 
@@ -690,7 +695,7 @@ mod tests {
             store_data_from_file2.boards.first().unwrap().id,
             fake_store_data2.boards.first().unwrap().id
         );
-        assert!(store.current_board_index.is_none());
+        assert_eq!(store.current_board_index, 0);
         assert_eq!(
             store_data_from_file2.lists.len(),
             fake_store_data2.lists.len()
@@ -699,7 +704,7 @@ mod tests {
             store_data_from_file2.lists.first().unwrap().id,
             fake_store_data2.lists.first().unwrap().id
         );
-        assert!(store.current_list_index.is_none());
+        assert_eq!(store.current_board_index, 0);
         assert_eq!(store_data_from_file2.updated, fake_store_data2.updated);
         assert!(store.current_cards.is_none());
         assert!(store.current_card_index.is_none());
@@ -720,7 +725,7 @@ mod tests {
 
         assert_eq!(true, Path::new(remove_data_store_path).is_file());
 
-        store.remove_data_file()?;
+        remove_data_file(remove_data_store_path)?;
         assert_eq!(false, Path::new(remove_data_store_path).is_file());
 
         Ok(())
