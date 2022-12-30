@@ -12,3 +12,4 @@ Cargo.lock
 .env
 .env.test
 log
+data.json
