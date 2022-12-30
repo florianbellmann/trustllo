@@ -14,6 +14,7 @@ use crate::{
 // TODO: unclear if I want to store data next to config?
 // use crate::config::config_manager::ConfigManager;
 
+
 pub struct Store {
     pub boards: Vec<Board>, // base data from file
     pub current_board_index: usize,
@@ -121,7 +122,7 @@ impl Store {
     pub fn set_current_list_index(&mut self, index: usize) {
         self.current_list_index = index;
     }
-    pub fn get_current_list(&mut self) -> &List {
+    pub fn get_current_list(&self) -> &List {
         &self.current_lists[self.current_list_index]
     }
 

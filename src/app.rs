@@ -3,17 +3,17 @@ use crossterm::event::{self, Event, KeyCode};
 use log::debug;
 
 use crate::{
-    config::config_manager::ConfigManager, store::{data_provider::DataProvider}, ui::cli::Cli,
+    config::config_manager::ConfigManager, store::data_provider::DataProvider, ui::cli::Cli,
 };
 
 pub struct ApplicationService {
-    data_provider:DataProvider
+    data_provider: DataProvider,
 }
 
 impl ApplicationService {
     pub fn new() -> ApplicationService {
         ApplicationService {
-            data_provider:DataProvider::new()
+            data_provider: DataProvider::new(),
         }
     }
 
@@ -70,38 +70,27 @@ impl ApplicationService {
         // cli restore needed
     }
 
-    pub fn run_app_loop(&self) -> Result<()> {
+    pub async fn run_app_loop(&mut self) -> Result<()> {
         debug!("Starting app loop.");
         // TODO: actually build the app loop
         let mut cli = Cli::new(); // TODO: remove this cli instance
 
-
-// I actually need a data provider here
-//         provider uses -> Store, ApiConnector
-//         try store, otherwise use api 
-//         setter always uses api + updates store
-//         update diagram as well
-//             and only provider holds these guys. 
-//             app service only has provider object
-
-        // get things from store cache
-        // let current_board = self.store.get_current_board();
-        // let current_lists = self.store.current_lists.as_ref().unwrap(); // TODO: this error is not handled yet
-        // let current_list_index = self.store.current_list_index.unwrap();
-        // let current_cards = &self.store.current_cards.as_ref().unwrap();
-        // let current_card_index = self.store.current_card_index.unwrap();
-
-        // get missing parts from api later
+        // get data
+        let current_board = self.data_provider.get_current_board().await;
+        let current_lists = self.data_provider.get_current_lists().await;
+        let current_list_index = self.data_provider.get_current_list_index().await;
+        let current_cards = self.data_provider.get_current_cards().await;
+        let current_card_index = self.data_provider.get_current_card_index().await;
 
         loop {
             cli.draw();
-            // cli.render(
-            //     &current_board.name,
-            //     current_lists.iter().map(|l| &l.name).collect(),
-            //     current_list_index,
-            //     current_cards.iter().map(|c| &c.name).collect(),
-            //     current_card_index,
-            // );
+            cli.render(
+                &current_board.name,
+                current_lists.iter().map(|l| &l.name).collect(),
+                current_list_index,
+                current_cards.iter().map(|c| &c.name).collect(),
+                current_card_index,
+            );
 
             if let Event::Key(key) = event::read()? {
                 if let KeyCode::Char('q') = key.code {

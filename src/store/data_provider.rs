@@ -54,12 +54,12 @@ impl DataProvider {
         }
         self.store.current_board_index
     }
-    pub async fn get_current_board(&mut self) -> &Board {
+    pub async fn get_current_board(&mut self) -> Board {
         if let 0 = self.store.boards.len() {
             warn!("No current board found in store. Loading from API.");
             self.get_boards().await;
         }
-        self.store.get_current_board()
+        self.store.get_current_board().clone()
     }
 
     pub async fn set_boards(&mut self, boards: Vec<Board>) -> Result<()> {
@@ -68,7 +68,7 @@ impl DataProvider {
 
     // lists
     // --------------------------------------------------------------------------------------------
-    pub async fn get_current_lists(&mut self) -> &Vec<List> {
+    pub async fn get_current_lists(&mut self) -> Vec<List> {
         if let 0 = self.store.current_lists.len() {
             warn!("No lists found in store. Loading from API.");
             match self
@@ -83,7 +83,7 @@ impl DataProvider {
                 Err(e) => error!("Error while loading lists from API: {}", e),
             }
         }
-        self.store.current_lists.as_ref()
+        self.store.current_lists.clone()
     }
     pub async fn get_current_list_index(&mut self) -> usize {
         if let 0 = self.store.current_lists.len() {
@@ -114,7 +114,7 @@ impl DataProvider {
 
     // cards
     // --------------------------------------------------------------------------------------------
-    pub async fn get_current_cards(&mut self) -> &Vec<Card> {
+    pub async fn get_current_cards(&mut self) -> Vec<Card> {
         if self.store.current_cards.is_none()
             || self.store.current_cards.as_ref().unwrap().is_empty()
         {
@@ -128,7 +128,7 @@ impl DataProvider {
                 Err(e) => error!("Error while loading cards from API: {}", e),
             }
         }
-        self.store.current_cards.as_ref().unwrap()
+        self.store.current_cards.clone().unwrap()
     }
     pub async fn get_current_card_index(&mut self) -> usize {
         if self.store.current_cards.is_none()
