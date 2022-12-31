@@ -103,7 +103,7 @@ impl Store {
 
     // lists
     // ----------------------------------------------------------------------------------------------------------------
-    pub fn set_current_lists(&mut self, lists: Vec<List>) -> Result<()> {
+    pub async fn set_current_lists(&mut self, lists: Vec<List>) -> Result<()> {
         self.current_lists = lists.clone();
         self.current_list_index = 0;
         let boards = self.boards.clone();
@@ -127,7 +127,7 @@ impl Store {
 
     // cards
     // ----------------------------------------------------------------------------------------------------------------
-    pub fn set_current_cards(&mut self, cards: Vec<Card>) {
+    pub async fn set_current_cards(&mut self, cards: Vec<Card>) {
         self.current_cards = Some(cards);
         self.current_card_index = Some(0);
     }
@@ -397,7 +397,7 @@ mod tests {
         let list4: List = FakeData::get_fake_list();
 
         let lists = vec![list1.clone(), list2.clone(), list3.clone(), list4.clone()];
-        store.set_current_lists(lists)?;
+        store.set_current_lists(lists).await?;
 
         assert_eq!(store.current_lists[0].id, list1.id);
         assert_eq!(store.current_lists[0].name, list1.name);
@@ -430,7 +430,7 @@ mod tests {
         let list7: List = FakeData::get_fake_list();
 
         let lists = vec![list5.clone(), list6.clone(), list7.clone()];
-        store.set_current_lists(lists)?;
+        store.set_current_lists(lists).await?;
 
         assert_eq!(store.current_lists[0].id, list5.id);
         assert_eq!(store.current_lists[0].name, list5.name);
@@ -469,7 +469,7 @@ mod tests {
         let lists = vec![list1, list2];
 
         assert_eq!(store.current_list_index, 0);
-        store.set_current_lists(lists)?;
+        store.set_current_lists(lists).await?;
         assert_eq!(store.current_list_index, 0);
 
         store.set_current_list_index(0);

@@ -78,10 +78,10 @@ impl ApplicationService {
         loop {
             // get data
             let _current_board = self.data_provider.get_current_board().await;
-            // let current_lists = self.data_provider.get_current_lists().await;
-            // let current_list_index = self.data_provider.get_current_list_index().await;
-            // let current_cards = self.data_provider.get_current_cards().await;
-            // let current_card_index = self.data_provider.get_current_card_index().await;
+            let current_lists = self.data_provider.get_current_lists().await;
+            let current_list_index = self.data_provider.get_current_list_index().await;
+            let current_cards = self.data_provider.get_current_cards().await;
+            let current_card_index = self.data_provider.get_current_card_index().await;
             // // cli.draw();
             // cli.render(
             //     current_board.name,

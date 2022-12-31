@@ -2,8 +2,35 @@ use anyhow::Result;
 use log::{error, warn};
 
 use crate::trello::{api_connector::ApiConnector, Board, Card, List};
+// use tokio::task::block_on;
+use futures::executor::block_on;
 
 use super::store::Store;
+
+// pub mod DataProviderMod {
+//     use log::{error, warn};
+
+//     use crate::{trello::{api_connector::ApiConnector, Board}, store::store::Store};
+
+//     pub struct DataProvider {
+//         pub store: Store,
+//         pub api_connector: ApiConnector,
+
+//     }
+
+//     pub async fn get_boards() -> Vec<Board> {
+//         if let 0 = store.boards.len() {
+//             warn!("No boards found in store. Loading from API.");
+//             match api_connector.get_boards().await {
+//                 Ok(boards) => {
+//                     store.set_boards(boards);
+//                 }
+//                 Err(e) => error!("Error while loading boards from API: {}", e),
+//             }
+//         }
+//         store.boards.clone()
+//     }
+// }
 
 pub struct DataProvider {
     api_connector: ApiConnector,
@@ -34,17 +61,17 @@ impl DataProvider {
 
     // boards
     // --------------------------------------------------------------------------------------------
-    pub async fn get_boards(&mut self) -> &Vec<Board> {
+    pub async fn get_boards(&mut self) -> Vec<Board> {
         if let 0 = self.store.boards.len() {
             warn!("No boards found in store. Loading from API.");
-            match self.api_connector.get_boards().await {
+            match block_on(self.api_connector.get_boards()) {
                 Ok(boards) => {
-                    self.store.set_boards(boards);
+                    block_on(self.store.set_boards(boards));
                 }
                 Err(e) => error!("Error while loading boards from API: {}", e),
             }
         }
-        self.store.boards.as_ref()
+        self.store.boards.clone()
     }
     pub async fn get_current_board_index(&mut self) -> usize {
         if let 0 = self.store.boards.len() {
@@ -69,14 +96,13 @@ impl DataProvider {
     // --------------------------------------------------------------------------------------------
     pub async fn get_current_lists(&mut self) -> Vec<List> {
         if let 0 = self.store.current_lists.len() {
-            warn!("No lists found in store. Loading from API.");
-            match self
-                .api_connector
-                .get_lists_on_board(self.store.get_current_board().id.as_str())
-                .await
-            {
+            warn!("No current lists found in store. Loading from API.");
+            match block_on(
+                self.api_connector
+                    .get_lists_on_board(self.store.get_current_board().id.clone().as_str()),
+            ) {
                 Ok(lists) => {
-                    self.store.set_current_lists(lists);
+                    block_on(self.store.set_current_lists(lists));
                 }
                 Err(e) => error!("Error while loading lists from API: {}", e),
             }
@@ -97,7 +123,7 @@ impl DataProvider {
         self.store.get_current_list()
     }
     pub async fn get_lists_on_board(&self, board_id: &str) -> Vec<List> {
-        match self.api_connector.get_lists_on_board(board_id).await {
+        match block_on(self.api_connector.get_lists_on_board(board_id)) {
             Ok(lists) => lists,
             Err(e) => {
                 error!("Error while loading lists from API: {}", e);
@@ -107,7 +133,7 @@ impl DataProvider {
     }
 
     pub async fn set_current_lists(&mut self, lists: Vec<List>) -> Result<()> {
-        self.store.set_current_lists(lists)
+        self.store.set_current_lists(lists).await
     }
 
     // cards
@@ -118,9 +144,9 @@ impl DataProvider {
         {
             warn!("No cards found in store. Loading from API.");
             // let id = self.get_current_list().await.id.as_str();
-            match self.api_connector.get_cards_on_list("2").await {
+            match block_on(self.api_connector.get_cards_on_list("2")) {
                 Ok(cards) => {
-                    self.store.set_current_cards(cards);
+                    block_on(self.store.set_current_cards(cards));
                 }
                 Err(e) => error!("Error while loading cards from API: {}", e),
             }
@@ -145,11 +171,11 @@ impl DataProvider {
         }
         self.store.get_current_card().unwrap()
     }
-    pub async fn get_last_card(&self) -> Option<&Card> {
-        self.store.last_card.as_ref()
+    pub async fn get_last_card(&self) -> Option<Card> {
+        self.store.last_card.clone()
     }
     pub async fn get_cards_on_list(&self, list_id: &str) -> Vec<Card> {
-        match self.api_connector.get_cards_on_list(list_id).await {
+        match block_on(self.api_connector.get_cards_on_list(list_id)) {
             Ok(cards) => cards,
             Err(e) => {
                 error!("Error while loading cards from API: {}", e);
@@ -173,7 +199,7 @@ impl DataProvider {
             card.unwrap().clone()
         } else {
             warn!("Card not found in current cards. Loading from API.");
-            match self.api_connector.get_card_by_id(card_id).await {
+            match block_on(self.api_connector.get_card_by_id(card_id)) {
                 Ok(card) => card,
                 Err(e) => {
                     error!("Error while loading card from API: {}", e);
@@ -187,7 +213,7 @@ impl DataProvider {
         self.store.set_current_card_index(index)
     }
     pub async fn set_current_cards(&mut self, cards: Vec<Card>) {
-        self.store.set_current_cards(cards)
+        self.store.set_current_cards(cards).await
     }
     pub async fn set_last_card(&mut self, card: &Card) {
         self.store.set_last_card(card)
