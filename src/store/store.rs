@@ -487,8 +487,8 @@ mod tests {
         Ok(())
     }
 
-    #[test]
-    fn set_current_cards_spec() {
+    #[tokio::test]
+    async fn set_current_cards_spec() {
         let set_current_cards_data_store_path =
             "/tmp/trustllo_set_current_cards_data_store_path.json";
         let mut store = Store::new(Some(set_current_cards_data_store_path));
