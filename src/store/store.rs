@@ -502,7 +502,7 @@ mod tests {
 
         let cards = vec![card1.clone(), card2.clone(), card3.clone(), card4.clone()];
 
-        store.set_current_cards(cards);
+        store.set_current_cards(cards).await;
 
         assert_eq!(store.current_cards.as_ref().unwrap()[0].id, card1.id);
         assert_eq!(store.current_cards.as_ref().unwrap()[0].name, card1.name);
