@@ -144,7 +144,7 @@ impl DataProvider {
         {
             warn!("No cards found in store. Loading from API.");
             // let id = self.get_current_list().await.id.as_str();
-            match block_on(self.api_connector.get_cards_on_list("2")) {
+            match block_on(self.api_connector.get_cards_on_list("2")) { // TODO: this boycotts the quick load
                 Ok(cards) => {
                     block_on(self.store.set_current_cards(cards));
                 }
