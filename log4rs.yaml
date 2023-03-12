@@ -1,13 +1,14 @@
 refresh_rate: 30 seconds
+
 appenders:
   stdout:
     kind: console
     encoder:
-      pattern: "{d(%+)(utc)} [{f}:{L}] [{h({l})}] {M}:{m}{n}"
+      pattern: "{d(%+4)(utc)} [{h({l})}] [{f}:{L}] {m}{n}"
   stderr:
     kind: console
     encoder:
-      pattern: "{d(%+)(utc)} [{f}:{L}] [{h({l})}] {M}:{m}{n}"
+      pattern: "{d(%+4)(utc)} [{h({l})}] [{f}:{L}] {m}{n}"
   rolling_file:
     kind: rolling_file
     path: "log/app.log"
@@ -22,11 +23,11 @@ appenders:
         count: 20
         base: 1
     encoder:
-      pattern: "{d(%+)(utc)} [{f}:{L}] [{h({l})}] {M}:{m}{n}"
+      pattern: "{d(%+4)(utc)} [{h({l})}] [{f}:{L}] {m}{n}"
+
 root:
-  level: debug
+  level: info
   appenders:
     - stdout
     - stderr
     - rolling_file
-

@@ -1,10 +1,10 @@
-use crate::store::StoreData;
 // use fake::{Dummy, Fake, Faker, ResultFaker, StringFaker};
-use crate::trello::{Board, Card, List};
 use fake::faker::boolean::en::Boolean;
 use fake::faker::lorem::en::Words;
 
 use fake::{Fake, Faker};
+
+use crate::domain::entities::{Board, List, Card};
 
 // TODO: remove this file from the normal app module tree. only for testing
 

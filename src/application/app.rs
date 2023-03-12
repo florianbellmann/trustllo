@@ -1,32 +1,34 @@
-use anyhow::Result;
-use crossterm::event::{self, Event, KeyCode};
-use log::{debug};
+use std::rc::Rc;
 
-use crate::{
-    config::config_manager::ConfigManager, store::data_provider::DataProvider, ui::cli::Cli,
-};
+// use crossterm::event::{self, Event, KeyCode};
+use log::{debug, info};
+
+use crate::infrastructure::repositories::KanbanRepository;
+
+// use crate::{
+//     config::config_manager::ConfigManager, store::data_provider::DataProvider, ui::cli::Cli,
+// };
 
 pub struct ApplicationService {
-    data_provider: DataProvider,
+    kanban_repository: Rc<dyn KanbanRepository>,
 }
 
 impl ApplicationService {
-    pub fn new() -> ApplicationService {
-        ApplicationService {
-            data_provider: DataProvider::new(),
-        }
+    pub fn new(kanban_repository: Rc<dyn KanbanRepository>) -> ApplicationService {
+        ApplicationService { kanban_repository }
     }
 
-    pub async fn init(&mut self) -> Result<()> {
+    pub async fn init(&self) {
+        //-> Result<()> {
         debug!("Initializing app.");
 
-        let cli = Cli::new(); // TODO: remove this cli instance
+        // let cli = Cli::new(); // TODO: remove this cli instance
 
-        // TODO add functionality for custom config
-        if !ConfigManager::config_exists(None) {
-            let (key, token, member_id) = cli.read_config_from_user_input();
-            ConfigManager::create_config(key, token, member_id, None);
-        }
+        // // TODO add functionality for custom confi
+        // if !ConfigManager::config_exists(None) {
+        //     let (key, token, member_id) = cli.read_config_from_user_input();
+        //     ConfigManager::create_config(key, token, member_id, None);
+        // }
         // TODO: Do I really want init functions everywhere or do I use the new function because I instantiate everything anyway?
         // for now yes, because I need to split new store from init
         // match self.store.init_from_cache(None).await {
@@ -62,7 +64,7 @@ impl ApplicationService {
         //
 
         // init keyboard listener
-        Ok(())
+        // Ok(())
     }
 
     pub fn teardown(&self) {
@@ -70,42 +72,43 @@ impl ApplicationService {
         // cli restore needed
     }
 
-    pub async fn run_app_loop(&mut self) -> Result<()> {
+    pub async fn run_app_loop(&mut self) {
         debug!("Starting app loop.");
         // TODO: actually build the app loop
-        let _cli = Cli::new(); // TODO: remove this cli instance
+        // let _cli = Cli::new(); // TODO: remove this cli instance
 
-        loop {
-            // get data
-            let _current_board = self.data_provider.get_current_board().await;
-            let _current_lists = self.data_provider.get_current_lists().await;
-            let _current_list_index = self.data_provider.get_current_list_index().await;
-            let _current_cards = self.data_provider.get_current_cards().await;
-            let _current_card_index = self.data_provider.get_current_card_index().await;
-            // // cli.draw();
-            // cli.render(
-            //     current_board.name,
-            //     current_lists.into_iter().map(|l| l.name).collect(),
-            //     current_list_index,
-            //     current_cards.into_iter().map(|c| c.name).collect(),
-            //     current_card_index,
-            // );
+        // loop {
+        // get data
+        let _current_board = self.kanban_repository.get_current_board().await;
+        let _current_lists = self.kanban_repository.get_current_lists().await;
+        let _current_list_index = self.kanban_repository.get_current_list_index().await;
+        let _current_cards = self.kanban_repository.get_current_cards().await;
+        let _current_card_index = self.kanban_repository.get_current_card_index().await;
+        info!("done loading");
+        // // cli.draw();
+        // cli.render(
+        //     current_board.name,
+        //     current_lists.into_iter().map(|l| l.name).collect(),
+        //     current_list_index,
+        //     current_cards.into_iter().map(|c| c.name).collect(),
+        //     current_card_index,
+        // );
 
-            if let Event::Key(key) = event::read()? {
-                if let KeyCode::Char('q') = key.code {
-                    return Ok(());
-                }
-            }
-        }
+        // if let Event::Key(key) = event::read()? {
+        //     if let KeyCode::Char('q') = key.code {
+        //         return Ok(());
+        //     }
+        // }
+        // }
         // pub fn run_app<B: Backend>(terminal: &mut Terminal<B>) -> io::Result<()> {
         //     loop {
         //     }
         // }
-        //
+
         // todo!()
     }
 
-    async fn refresh_boards_and_lists(&self) -> Result<()> {
+    async fn refresh_boards_and_lists(&self) {
         // let boards = self.api_connector.get_boards().await?;
         // let _board = boards.first().unwrap();
 
@@ -114,7 +117,6 @@ impl ApplicationService {
         //         self.store.set_current_lists(&lists);
         //         let list = lists.first().unwrap();
         // self.store.set_current_list(&list);
-        Ok(())
     }
 }
 

@@ -3,9 +3,21 @@ use std::fs::{self, File};
 use std::io::Read;
 use std::path::Path;
 
-use log::{info, error};
+use log::{error, info};
 
 use super::Config;
+
+use serde::{Deserialize, Serialize};
+
+pub mod config_manager;
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Config {
+    pub api_key: String,
+    pub api_token: String,
+    pub member_id: String,
+}
+
 pub struct ConfigManager {}
 
 //TODO:  should this also be an instance instead of static?
