@@ -5,11 +5,7 @@ use std::path::Path;
 
 use log::{error, info};
 
-use super::Config;
-
 use serde::{Deserialize, Serialize};
-
-pub mod config_manager;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Config {

@@ -82,5 +82,6 @@ pub struct Card {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Label {}
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Checklist {}

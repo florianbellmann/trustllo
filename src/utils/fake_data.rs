@@ -4,7 +4,7 @@ use fake::faker::lorem::en::Words;
 
 use fake::{Fake, Faker};
 
-use crate::domain::entities::{Board, List, Card};
+use crate::domain::entities::{Board, Card, List};
 
 // TODO: remove this file from the normal app module tree. only for testing
 
@@ -49,26 +49,26 @@ impl FakeData {
         }
     }
 
-    pub fn get_fake_store_data() -> StoreData {
-        let boards = vec![
-            Self::get_fake_board(),
-            Self::get_fake_board(),
-            Self::get_fake_board(),
-        ];
+    // pub fn get_fake_store_data() -> StoreData {
+    //     let boards = vec![
+    //         Self::get_fake_board(),
+    //         Self::get_fake_board(),
+    //         Self::get_fake_board(),
+    //     ];
 
-        let lists = vec![
-            Self::get_fake_list(),
-            Self::get_fake_list(),
-            Self::get_fake_list(),
-            Self::get_fake_list(),
-        ];
+    //     let lists = vec![
+    //         Self::get_fake_list(),
+    //         Self::get_fake_list(),
+    //         Self::get_fake_list(),
+    //         Self::get_fake_list(),
+    //     ];
 
-        StoreData {
-            updated: "missing date".to_string(), //TODO: not implemented yet
-            boards,
-            lists,
-        }
-    }
+    //     StoreData {
+    //         updated: "missing date".to_string(), //TODO: not implemented yet
+    //         boards,
+    //         lists,
+    //     }
+    // }
 }
 
 fn get_random_string(count: std::ops::Range<usize>) -> String {
