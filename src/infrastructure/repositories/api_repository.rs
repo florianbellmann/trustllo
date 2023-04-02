@@ -10,7 +10,7 @@ use crate::infrastructure::config_manager::ConfigManager;
 
 use super::{Board, Card, KanbanRepository, List};
 
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize};
 
 pub struct ApiKanbanRepository {
     api_key: String,

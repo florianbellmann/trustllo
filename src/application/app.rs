@@ -85,6 +85,7 @@ impl ApplicationService {
         let _current_cards = self.kanban_repository.get_current_cards().await;
         let _current_card_index = self.kanban_repository.get_current_card_index().await;
         info!("done loading");
+        info!("{:?}", _current_cards.first().unwrap().name);
 
         // // cli.draw();
         // cli.render(

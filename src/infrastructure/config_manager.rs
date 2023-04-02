@@ -93,12 +93,16 @@ impl ConfigManager {
 
 #[cfg(test)]
 mod tests {
+    use pretty_assertions::assert_eq;
     use std::{
         fs::{self},
         path::Path,
     };
 
+    use fake::{faker::number::raw::NumberWithFormat, Fake, Faker};
+
     use crate::utils::types::get_type_of;
+    use rstest::rstest;
 
     use super::ConfigManager;
 
@@ -176,5 +180,20 @@ mod tests {
 
         ConfigManager::remove_config(Some(remove_config_name));
         assert!(!Path::new(remove_config_name).is_file());
+    }
+
+    #[rstest]
+    #[case(0, 0)]
+    #[case(1, 1)]
+    #[case(2, 1)]
+    #[case(3, 2)]
+    #[case(4, 3)]
+    #[case(5, 5)]
+    #[case(6, 8)]
+    fn test_stuff(#[case] input: u32, #[case] expected: u32) {
+        let a = Faker.fake::<usize>();
+        let b = 4;
+        assert_eq!(input, expected+1);
+        assert_eq!(a, a);
     }
 }

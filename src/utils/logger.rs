@@ -1,14 +1,6 @@
-use log::LevelFilter;
+
 use log4rs::{
     self,
-    append::{
-        console::{ConsoleAppender, Target},
-        file::FileAppender,
-    },
-    config::{Appender, Root},
-    encode::pattern::PatternEncoder,
-    filter::threshold::ThresholdFilter,
-    Config,
 };
 
 // TODO: the panics are only logged to the console not the file

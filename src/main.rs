@@ -13,6 +13,10 @@ mod utils;
 async fn main() {
     Logger::init();
 
+    // let x = 3;
+    // let y = 5;
+    // assert_eq!(x, y);
+
     let kanban_repo = Rc::new(ApiKanbanRepository::new());
 
     let mut application_service = ApplicationService::new(kanban_repo);
